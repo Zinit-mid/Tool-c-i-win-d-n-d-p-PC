@@ -1,0 +1,49 @@
+<Window x:Class="PCTool.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:PCTool.Views"
+        Title="PCTool - Cài Win &amp; Dọn dẹp PC" Height="640" Width="980"
+        MinHeight="480" MinWidth="760" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="150" />
+        </Grid.RowDefinitions>
+
+        <TabControl Grid.Row="0" TabStripPlacement="Left" Margin="6">
+            <TabItem Header="Dọn dẹp rác" Padding="12,8">
+                <views:CleanupView />
+            </TabItem>
+            <TabItem Header="Dọn thư mục thông minh" Padding="12,8">
+                <views:PlaceholderView Title="Dọn thư mục thông minh"
+                    Detail="Tìm file/thư mục trùng, gom thư mục giống nhau, dọn bản sao lưu thừa, sắp xếp Downloads/Desktop. (Sắp làm)" />
+            </TabItem>
+            <TabItem Header="Sao lưu / Khôi phục app" Padding="12,8">
+                <views:PlaceholderView Title="Sao lưu / Khôi phục app"
+                    Detail="Quét app đã cài, lưu danh sách + dữ liệu, khôi phục bằng winget sau khi cài Win. (Sắp làm)" />
+            </TabItem>
+            <TabItem Header="Gỡ phần mềm cứng đầu" Padding="12,8">
+                <views:PlaceholderView Title="Gỡ phần mềm cứng đầu"
+                    Detail="Gỡ theo từng mức: gỡ chuẩn, dừng service/driver, Safe Mode, dọn tàn dư. (Sắp làm)" />
+            </TabItem>
+            <TabItem Header="Chẩn đoán máy in" Padding="12,8">
+                <views:PlaceholderView Title="Chẩn đoán máy in"
+                    Detail="Kiểm tra kết nối, driver, spooler, hàng đợi in và log lỗi. (Sắp làm)" />
+            </TabItem>
+            <TabItem Header="Windows Defender" Padding="12,8">
+                <views:PlaceholderView Title="Windows Defender"
+                    Detail="Bật/tắt bảo vệ thời gian thực có hẹn giờ tự bật lại, quản lý ngoại lệ. (Sắp làm)" />
+            </TabItem>
+            <TabItem Header="Cài lại Windows" Padding="12,8">
+                <views:PlaceholderView Title="Cài lại Windows"
+                    Detail="Chọn ổ giữ/ổ cài, sao lưu, tạo USB cài tự động. (Làm sau cùng, có chế độ chạy thử)" />
+            </TabItem>
+        </TabControl>
+
+        <GroupBox Grid.Row="1" Header="Nhật ký thao tác" Margin="6,0,6,6">
+            <TextBox x:Name="LogBox" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
+                     FontFamily="Consolas" FontSize="12" TextWrapping="NoWrap"
+                     HorizontalScrollBarVisibility="Auto" />
+        </GroupBox>
+    </Grid>
+</Window>

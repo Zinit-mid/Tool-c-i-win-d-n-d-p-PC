@@ -1,0 +1,30 @@
+name: Build PCTool
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build (kiểm tra lỗi biên dịch)
+        run: dotnet build PCTool/PCTool.csproj -c Release
+
+      - name: Publish 1 file exe
+        run: dotnet publish PCTool/PCTool.csproj -c Release -p:PublishSingleFile=true -o publish
+
+      - name: Upload exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: PCTool-win-x64
+          path: publish/PCTool.exe
+          if-no-files-found: error
