@@ -20,6 +20,13 @@ App Windows (C# / .NET 8 / WPF) dùng cá nhân. Luôn chạy với quyền Admi
 - Ưu tiên chuyển vào thùng rác thay vì xóa thẳng khi xử lý file của người dùng.
 - Mọi thao tác được ghi vào nhật ký: `%LOCALAPPDATA%\PCTool\logs`.
 
+## Tự cập nhật
+
+Mỗi lần push lên `main`, GitHub Actions build và tạo một **Release** (`v0.1.<số lần build>`) kèm `PCTool.exe`.
+App tự kiểm tra Release mới khi mở (và có nút **Kiểm tra cập nhật** ở đầu cửa sổ). Có bản mới thì bấm
+**Cập nhật ngay**: app tải bản mới (kiểm tra SHA256), thay file, tự mở lại. Không cần tải tay nữa.
+Chỉ hoạt động khi chạy file `PCTool.exe` (không phải `dotnet run`).
+
 ## Lấy file .exe
 
 Mỗi lần push lên `main`, GitHub Actions tự build. Vào tab **Actions** → lần chạy mới nhất →
