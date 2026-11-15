@@ -16,9 +16,9 @@ jobs:
       # Phiên bản tăng dần theo số lần chạy: 0.1.<run_number>. App so phiên bản này để tự cập nhật.
       APP_VERSION: 0.1.${{ github.run_number }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '8.0.x'
 
@@ -29,7 +29,7 @@ jobs:
         run: dotnet publish PCTool/PCTool.csproj -c Release -p:PublishSingleFile=true "-p:Version=$env:APP_VERSION" -o publish
 
       - name: Upload exe
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: PCTool-win-x64
           path: publish/PCTool.exe
