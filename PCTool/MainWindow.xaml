@@ -27,8 +27,7 @@
                     Detail="Gỡ theo từng mức: gỡ chuẩn, dừng service/driver, Safe Mode, dọn tàn dư. (Sắp làm)" />
             </TabItem>
             <TabItem Header="Chẩn đoán máy in" Padding="12,8">
-                <views:PlaceholderView Title="Chẩn đoán máy in"
-                    Detail="Kiểm tra kết nối, driver, spooler, hàng đợi in và log lỗi. (Sắp làm)" />
+                <views:PrinterView />
             </TabItem>
             <TabItem Header="Windows Defender" Padding="12,8">
                 <views:PlaceholderView Title="Windows Defender"

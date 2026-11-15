@@ -10,7 +10,7 @@ App Windows (C# / .NET 8 / WPF) dùng cá nhân. Luôn chạy với quyền Admi
 | Dọn thư mục thông minh (trùng lặp, gom thư mục, sắp xếp) | Dự kiến |
 | Sao lưu / Khôi phục app (winget + AppData) | Dự kiến |
 | Gỡ phần mềm cứng đầu | Dự kiến |
-| Chẩn đoán máy in | Dự kiến |
+| Chẩn đoán máy in (spooler, driver, kết nối mạng/USB, hàng đợi, lỗi PrintService; sửa nhanh: khởi động lại Spooler, xóa hàng đợi) | Có bản đầu |
 | Bật/tắt Windows Defender (có hẹn giờ) | Dự kiến |
 | Cài lại Windows (chọn ổ giữ/ổ cài, USB tự động) | Dự kiến, làm sau cùng |
 

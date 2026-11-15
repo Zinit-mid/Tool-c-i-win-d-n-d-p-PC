@@ -1,0 +1,94 @@
+<UserControl x:Class="PCTool.Views.PrinterView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock Text="Chẩn đoán máy in" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Foreground="Gray" Margin="0,4,0,0" TextWrapping="Wrap"
+                       Text="Bấm Chẩn đoán để kiểm tra Print Spooler, driver, trạng thái, kết nối mạng và hàng đợi in. Bước chẩn đoán chỉ đọc thông tin, không thay đổi gì." />
+        </StackPanel>
+
+        <DataGrid x:Name="PrintersGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True"
+                  CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                  MaxHeight="150" Margin="0,0,0,10">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Máy in" Binding="{Binding Name}" Width="200" />
+                <DataGridTextColumn Header="Driver" Binding="{Binding Driver}" Width="180" />
+                <DataGridTextColumn Header="Cổng" Binding="{Binding Port}" Width="120" />
+                <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="130" />
+                <DataGridTextColumn Header="Kết nối" Binding="{Binding Connection}" Width="*" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <DataGrid x:Name="FindingsGrid" Grid.Row="2" AutoGenerateColumns="False" IsReadOnly="True"
+                  CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Level}" Value="Error">
+                            <Setter Property="Background" Value="#FFFDE7E7" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Level}" Value="Warn">
+                            <Setter Property="Background" Value="#FFFFF6DD" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Level}" Value="Ok">
+                            <Setter Property="Background" Value="#FFE8F6E8" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Mức" Binding="{Binding LevelText}" Width="100" />
+                <DataGridTextColumn Header="Máy in" Binding="{Binding Printer}" Width="140">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextWrapping" Value="Wrap" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Vấn đề" Binding="{Binding Problem}" Width="*">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextWrapping" Value="Wrap" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Cách xử lý" Binding="{Binding Advice}" Width="*">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextWrapping" Value="Wrap" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <StackPanel Grid.Row="3" Margin="0,10,0,0">
+            <ProgressBar x:Name="Progress" Height="8" Minimum="0" Maximum="100" />
+            <TextBlock x:Name="StatusText" Margin="0,6,0,0" Foreground="Gray" Text="Sẵn sàng." />
+        </StackPanel>
+
+        <WrapPanel Grid.Row="4" Margin="0,10,0,0">
+            <Button x:Name="DiagnoseButton" Content="Chẩn đoán" Width="110" Height="32" Margin="0,0,10,6"
+                    Click="DiagnoseButton_Click" />
+            <Button x:Name="CancelButton" Content="Dừng" Width="80" Height="32" Margin="0,0,10,6"
+                    Click="CancelButton_Click" IsEnabled="False" />
+            <Button x:Name="RestartSpoolerButton" Content="Khởi động lại Spooler" Width="160" Height="32" Margin="0,0,10,6"
+                    Click="RestartSpoolerButton_Click" />
+            <Button x:Name="ClearQueueButton" Content="Xóa hàng đợi in" Width="130" Height="32" Margin="0,0,10,6"
+                    Click="ClearQueueButton_Click" />
+            <Button x:Name="OpenSettingsButton" Content="Cài đặt máy in" Width="120" Height="32" Margin="0,0,10,6"
+                    Click="OpenSettingsButton_Click" />
+            <Button x:Name="CopyButton" Content="Sao chép báo cáo" Width="130" Height="32" Margin="0,0,10,6"
+                    Click="CopyButton_Click" IsEnabled="False" />
+        </WrapPanel>
+    </Grid>
+</UserControl>
