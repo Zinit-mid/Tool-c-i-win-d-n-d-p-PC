@@ -6,9 +6,15 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
+    env:
+      # Phiên bản tăng dần theo số lần chạy: 0.1.<run_number>. App so phiên bản này để tự cập nhật.
+      APP_VERSION: 0.1.${{ github.run_number }}
     steps:
       - uses: actions/checkout@v4
 
@@ -20,7 +26,7 @@ jobs:
         run: dotnet build PCTool/PCTool.csproj -c Release
 
       - name: Publish 1 file exe
-        run: dotnet publish PCTool/PCTool.csproj -c Release -p:PublishSingleFile=true -o publish
+        run: dotnet publish PCTool/PCTool.csproj -c Release -p:PublishSingleFile=true "-p:Version=$env:APP_VERSION" -o publish
 
       - name: Upload exe
         uses: actions/upload-artifact@v4
@@ -28,3 +34,13 @@ jobs:
           name: PCTool-win-x64
           path: publish/PCTool.exe
           if-no-files-found: error
+
+      # Chỉ khi push lên main: tạo GitHub Release để app tự cập nhật.
+      - name: Tạo Release (cho tự cập nhật)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          $env:COMMIT_MSG | Out-File -FilePath notes.txt -Encoding utf8
+          gh release create "v$env:APP_VERSION" publish/PCTool.exe --title "PCTool $env:APP_VERSION" --notes-file notes.txt --target $env:GITHUB_SHA
