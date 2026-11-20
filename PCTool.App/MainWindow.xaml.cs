@@ -1,5 +1,5 @@
 using System.Windows;
-using PCTool.Services;
+using PCTool.Core.Framework;
 
 namespace PCTool;
 

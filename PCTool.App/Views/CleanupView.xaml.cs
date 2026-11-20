@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
-using PCTool.Services;
+using PCTool.Core.Framework;
+using PCTool.Core.Optimize;
 
 namespace PCTool.Views;
 

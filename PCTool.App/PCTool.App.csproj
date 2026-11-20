@@ -3,10 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <AssemblyName>PCTool</AssemblyName>
     <RootNamespace>PCTool</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -20,5 +17,9 @@
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PCTool.Core\PCTool.Core.csproj" />
+  </ItemGroup>
 
 </Project>

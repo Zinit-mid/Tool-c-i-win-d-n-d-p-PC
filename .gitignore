@@ -1,5 +1,23 @@
+# Build
 bin/
 obj/
 publish/
+TestResults/
+*.trx
+
+# IDE
 .vs/
 *.user
+*.suo
+
+# Bí mật và dữ liệu cục bộ — KHÔNG bao giờ đưa lên GitHub
+.env
+.env.*
+!.env.example
+*.pfx
+*.snk
+secrets.json
+
+# Nhật ký và sao lưu tạo ra khi chạy app
+*.log
+PCTool_Backup/

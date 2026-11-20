@@ -1,7 +1,8 @@
 using System.IO;
 using System.Runtime.InteropServices;
+using PCTool.Core.Framework;
 
-namespace PCTool.Services;
+namespace PCTool.Core.Optimize;
 
 /// <summary>Một loại rác có thể dọn (thư mục tạm, cache...).</summary>
 public sealed class CleanupItem

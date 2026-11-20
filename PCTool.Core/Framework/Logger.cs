@@ -1,14 +1,13 @@
 using System.IO;
 
-namespace PCTool.Services;
+namespace PCTool.Core.Framework;
 
 /// <summary>Nhật ký thao tác: hiển thị trong app và ghi ra file để xem lại.</summary>
 public static class Logger
 {
     private static readonly object Gate = new();
 
-    public static readonly string LogDir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PCTool", "logs");
+    public static string LogDir => AppPaths.LogDir;
 
     public static string LogFile => Path.Combine(LogDir, $"pctool-{DateTime.Now:yyyyMMdd}.log");
 

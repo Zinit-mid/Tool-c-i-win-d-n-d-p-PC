@@ -1,8 +1,8 @@
-name: Build PCTool
+name: Build and Test PCTool
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, 'buoc-*' ]
   pull_request:
   workflow_dispatch:
 
@@ -16,11 +16,29 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Build (kiểm tra lỗi biên dịch)
-        run: dotnet build PCTool/PCTool.csproj -c Release
+      - name: Restore
+        run: dotnet restore PCTool.sln
+
+      - name: Build
+        run: dotnet build PCTool.sln -c Release --no-restore
+
+      - name: Test
+        run: dotnet test PCTool.sln -c Release --no-build --logger "trx;LogFileName=test-results.trx"
+
+      - name: Kiểm tra định dạng code (chỉ báo, chưa chặn)
+        run: dotnet format PCTool.sln --verify-no-changes --no-restore
+        continue-on-error: true
 
       - name: Publish 1 file exe
-        run: dotnet publish PCTool/PCTool.csproj -c Release -p:PublishSingleFile=true -o publish
+        run: dotnet publish PCTool.App/PCTool.App.csproj -c Release -p:PublishSingleFile=true -o publish
+
+      - name: Upload kết quả test
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/test-results.trx'
+          if-no-files-found: ignore
 
       - name: Upload exe
         uses: actions/upload-artifact@v4
