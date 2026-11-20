@@ -25,6 +25,9 @@
             <TabItem Header="Dọn dẹp rác" Padding="12,8">
                 <views:CleanupView />
             </TabItem>
+            <TabItem Header="Thông số phần cứng" Padding="12,8">
+                <views:HardwareView />
+            </TabItem>
             <TabItem Header="Dọn thư mục thông minh" Padding="12,8">
                 <views:PlaceholderView Title="Dọn thư mục thông minh"
                     Detail="Tìm file/thư mục trùng, gom thư mục giống nhau, dọn bản sao lưu thừa, sắp xếp Downloads/Desktop. (Sắp làm)" />
