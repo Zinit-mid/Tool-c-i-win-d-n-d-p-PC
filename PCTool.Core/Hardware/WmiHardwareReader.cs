@@ -14,7 +14,7 @@ public interface IHardwareReader
 /// </summary>
 public sealed class WmiHardwareReader : IHardwareReader
 {
-    internal const string Script = """
+    public const string Script = """
 $ErrorActionPreference = 'SilentlyContinue'
 $o = [ordered]@{}
 $o.cpu = @(Get-CimInstance Win32_Processor | Select-Object Name,NumberOfCores,NumberOfLogicalProcessors,MaxClockSpeed)
