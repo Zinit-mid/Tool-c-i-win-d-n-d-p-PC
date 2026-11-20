@@ -44,8 +44,7 @@
                 <views:PrinterView />
             </TabItem>
             <TabItem Header="Windows Defender" Padding="12,8">
-                <views:PlaceholderView Title="Windows Defender"
-                    Detail="Bật/tắt bảo vệ thời gian thực có hẹn giờ tự bật lại, quản lý ngoại lệ. (Sắp làm)" />
+                <views:DefenderView />
             </TabItem>
             <TabItem Header="Cài lại Windows" Padding="12,8">
                 <views:PlaceholderView Title="Cài lại Windows"
