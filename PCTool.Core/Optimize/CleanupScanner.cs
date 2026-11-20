@@ -7,6 +7,8 @@ namespace PCTool.Core.Optimize;
 /// <summary>Một loại rác có thể dọn (thư mục tạm, cache...).</summary>
 public sealed class CleanupItem
 {
+    /// <summary>Mã ổn định cho nhật ký/báo cáo. Rỗng thì dùng tên.</summary>
+    public string Id { get; init; } = "";
     public required string Name { get; init; }
     public required string Description { get; init; }
     public required string[] Paths { get; init; }
@@ -44,24 +46,28 @@ public static class CleanupScanner
     {
         new CleanupItem
         {
+            Id = "temp-user",
             Name = "File tạm của người dùng",
             Description = "%TEMP% của tài khoản hiện tại",
             Paths = new[] { Path.GetTempPath() }
         },
         new CleanupItem
         {
+            Id = "temp-windows",
             Name = "File tạm của Windows",
             Description = @"C:\Windows\Temp",
             Paths = new[] { Path.Combine(Win, "Temp") }
         },
         new CleanupItem
         {
+            Id = "windows-update-cache",
             Name = "Cache Windows Update đã tải",
             Description = @"SoftwareDistribution\Download (Windows tự tải lại khi cần)",
             Paths = new[] { Path.Combine(Win, "SoftwareDistribution", "Download") }
         },
         new CleanupItem
         {
+            Id = "crash-dumps",
             Name = "Báo cáo lỗi / crash dump",
             Description = "WER, Minidump, CrashDumps",
             Paths = new[]
@@ -73,6 +79,7 @@ public static class CleanupScanner
         },
         new CleanupItem
         {
+            Id = "thumbnails",
             Name = "Ảnh thu nhỏ (thumbnail cache)",
             Description = "Explorer tự tạo lại",
             Paths = new[] { Path.Combine(Local, "Microsoft", "Windows", "Explorer") },
@@ -80,6 +87,7 @@ public static class CleanupScanner
         },
         new CleanupItem
         {
+            Id = "chrome-cache",
             Name = "Cache Google Chrome",
             Description = "Không xóa mật khẩu, lịch sử hay cookie",
             Paths = new[]
@@ -91,6 +99,7 @@ public static class CleanupScanner
         },
         new CleanupItem
         {
+            Id = "edge-cache",
             Name = "Cache Microsoft Edge",
             Description = "Không xóa mật khẩu, lịch sử hay cookie",
             Paths = new[]
@@ -102,6 +111,7 @@ public static class CleanupScanner
         },
         new CleanupItem
         {
+            Id = "recycle-bin",
             Name = "Thùng rác",
             Description = "Toàn bộ thùng rác trên mọi ổ (không thể khôi phục sau khi dọn)",
             Paths = Array.Empty<string>(),

@@ -20,6 +20,9 @@ public sealed class Finding
 {
     /// <summary>Error / Warn / Info / Ok (dùng để tô màu dòng).</summary>
     public string Level { get; init; } = "Info";
+
+    /// <summary>Mã loại vấn đề (rỗng nếu chưa phân loại). Dùng để gắn cách sửa tương ứng.</summary>
+    public string Code { get; init; } = "";
     public string Printer { get; init; } = "";
     public string Problem { get; init; } = "";
     public string Advice { get; init; } = "";
@@ -31,6 +34,12 @@ public sealed class Finding
         "Ok" => "✔ Ổn",
         _ => "ℹ Thông tin"
     };
+}
+
+public static class FindingCodes
+{
+    public const string SpoolerStopped = "printer.spooler-stopped";
+    public const string QueueStuck = "printer.queue-stuck";
 }
 
 public sealed class PrinterReport
@@ -123,6 +132,7 @@ public static class PrinterDiagnostics
             report.Findings.Add(new Finding
             {
                 Level = "Error",
+                Code = FindingCodes.SpoolerStopped,
                 Problem = $"Dịch vụ Print Spooler không chạy (trạng thái: {(string.IsNullOrEmpty(spStatus) ? "không rõ" : spStatus)}).",
                 Advice = spStart.Equals("Disabled", StringComparison.OrdinalIgnoreCase)
                     ? "Spooler đang bị tắt hẳn (Disabled). Bấm \"Khởi động lại Spooler\" sẽ không đủ, cần đặt lại kiểu khởi động = Automatic trong services.msc."
@@ -208,7 +218,7 @@ public static class PrinterDiagnostics
                 report.HasStuckJobs = true;
                 Add(report, "Warn", name,
                     $"{stuck.Count} lệnh in đang kẹt (vd: \"{Trunc(stuck[0].Doc)}\" - {stuck[0].Status}).",
-                    "Bấm \"Xóa hàng đợi in\" bên dưới để dọn lệnh kẹt.");
+                    "Bấm \"Xóa hàng đợi in\" bên dưới để dọn lệnh kẹt.", FindingCodes.QueueStuck);
             }
             else
             {
@@ -437,8 +447,8 @@ public static class PrinterDiagnostics
 
     // ------------------------------------------------------------------ tiện ích JSON
 
-    private static void Add(PrinterReport r, string level, string printer, string problem, string advice) =>
-        r.Findings.Add(new Finding { Level = level, Printer = printer, Problem = problem, Advice = advice });
+    private static void Add(PrinterReport r, string level, string printer, string problem, string advice, string code = "") =>
+        r.Findings.Add(new Finding { Level = level, Printer = printer, Problem = problem, Advice = advice, Code = code });
 
     private static string Trunc(string s, int max = 50) => s.Length <= max ? s : s[..max] + "…";
 
@@ -464,44 +474,4 @@ public static class PrinterDiagnostics
 
     private static int Int(JsonElement e, string prop) =>
         e.TryGetProperty(prop, out var v) && v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out var n) ? n : 0;
-}
-
-/// <summary>Các thao tác sửa nhanh (có thay đổi hệ thống, UI phải xác nhận trước khi gọi).</summary>
-public static class PrinterFixes
-{
-    public static async Task RestartSpoolerAsync(CancellationToken ct)
-    {
-        Logger.Info("Khởi động lại Print Spooler...");
-        var r = await PowerShellRunner.RunAsync(
-            "$ErrorActionPreference='Stop'; Set-Service -Name Spooler -StartupType Automatic; Restart-Service -Name Spooler -Force", ct);
-        if (r.ExitCode != 0) throw new InvalidOperationException(r.Error.Trim());
-        Logger.Info("Đã khởi động lại Print Spooler.");
-    }
-
-    /// <summary>Dừng spooler, xóa file hàng đợi trong spool\PRINTERS, bật lại spooler. Trả về số file đã xóa.</summary>
-    public static async Task<int> ClearQueueAsync(CancellationToken ct)
-    {
-        Logger.Info("Xóa hàng đợi in...");
-        const string script = """
-            $ErrorActionPreference = 'Stop'
-            $n = 0
-            try {
-                Stop-Service -Name Spooler -Force
-                $dir = Join-Path $env:SystemRoot 'System32\spool\PRINTERS'
-                $files = @(Get-ChildItem -Path $dir -File -Force)
-                $n = $files.Count
-                $files | Remove-Item -Force
-            }
-            finally {
-                Start-Service -Name Spooler -ErrorAction SilentlyContinue
-            }
-            Write-Output $n
-            """;
-        var r = await PowerShellRunner.RunAsync(script, ct);
-        if (r.ExitCode != 0) throw new InvalidOperationException(r.Error.Trim());
-
-        int.TryParse(r.Output.Trim(), out var count);
-        Logger.Info($"Đã xóa hàng đợi in ({count} file) và bật lại Print Spooler.");
-        return count;
-    }
 }

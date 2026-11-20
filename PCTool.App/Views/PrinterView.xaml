@@ -89,6 +89,8 @@
                     Click="OpenSettingsButton_Click" />
             <Button x:Name="CopyButton" Content="Sao chép báo cáo" Width="130" Height="32" Margin="0,0,10,6"
                     Click="CopyButton_Click" IsEnabled="False" />
+            <CheckBox x:Name="DryRunBox" Content="Chạy thử (không thay đổi máy)" IsChecked="True"
+                      VerticalAlignment="Center" Margin="10,0,0,6" />
         </WrapPanel>
     </Grid>
 </UserControl>

@@ -110,22 +110,27 @@ public partial class CleanupView : UserControl
         SetBusy(true);
         Logger.Info(dry ? "Bắt đầu dọn (CHẠY THỬ)." : "Bắt đầu dọn thật.");
 
-        var total = new CleanupResult();
+        // Mọi thao tác dọn đi qua khung chung: chạy thử / chế độ an toàn / nhật ký / kiểm tra lại.
+        var executor = new FixExecutor(new RestorePointService());
+        var options = new FixOptions { DryRun = dry, CreateRestorePoint = false };
+        var progress = new Progress<string>(m => StatusText.Text = m);
+        int ok = 0, failed = 0;
+        string? lastProblem = null;
+
         try
         {
             for (int i = 0; i < chosen.Count; i++)
             {
-                var item = chosen[i];
-                StatusText.Text = $"Đang dọn: {item.Name}";
-                var r = await Task.Run(() => CleanupScanner.Clean(item, dry, ct), ct);
-                total.FreedBytes += r.FreedBytes;
-                total.DeletedFiles += r.DeletedFiles;
-                total.SkippedFiles += r.SkippedFiles;
+                var result = await executor.RunAsync(new CleanupFix(chosen[i]), options, progress, ct);
+                if (result.IsSuccess) ok++;
+                else { failed++; lastProblem = result.Message; }
                 Progress.Value = (i + 1) * 100.0 / chosen.Count;
             }
 
-            StatusText.Text = $"{(dry ? "[Chạy thử] " : "")}Xong: {total.DeletedFiles} file, " +
-                              $"{CleanupItem.FormatSize(total.FreedBytes)}, bỏ qua {total.SkippedFiles} file đang dùng.";
+            RefreshGrid();
+            StatusText.Text = dry
+                ? $"[Chạy thử] Đã mô phỏng {ok} mục, máy chưa bị thay đổi. Xem chi tiết trong nhật ký."
+                : $"Xong: dọn {ok} mục" + (failed > 0 ? $", {failed} mục chưa xong ({lastProblem})" : "") + ". Bấm Quét để xem còn lại bao nhiêu.";
             Logger.Info(StatusText.Text);
         }
         catch (OperationCanceledException)

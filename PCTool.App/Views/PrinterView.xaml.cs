@@ -20,6 +20,7 @@ public partial class PrinterView : UserControl
     {
         DiagnoseButton.IsEnabled = !busy;
         RestartSpoolerButton.IsEnabled = !busy;
+        DryRunBox.IsEnabled = !busy;
         ClearQueueButton.IsEnabled = !busy;
         CancelButton.IsEnabled = busy;
         CopyButton.IsEnabled = !busy && _report != null;
@@ -67,20 +68,42 @@ public partial class PrinterView : UserControl
 
     private void CancelButton_Click(object sender, RoutedEventArgs e) => _cts?.Cancel();
 
-    private async void RestartSpoolerButton_Click(object sender, RoutedEventArgs e)
+    private async void RestartSpoolerButton_Click(object sender, RoutedEventArgs e) =>
+        await ConfirmAndRunAsync(new RestartSpoolerFix());
+
+    private async void ClearQueueButton_Click(object sender, RoutedEventArgs e) =>
+        await ConfirmAndRunAsync(new ClearPrintQueueFix());
+
+    /// <summary>Mọi cách sửa đi qua khung chung: hỏi xác nhận → chạy thử/chạy thật → kiểm tra lại → nhật ký.</summary>
+    private async Task ConfirmAndRunAsync(IFix fix)
     {
-        var ask = MessageBox.Show(
-            "Khởi động lại dịch vụ Print Spooler?\nCác lệnh in đang chạy có thể bị gián đoạn.",
-            "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question);
-        if (ask != MessageBoxResult.Yes) return;
+        bool dryRun = DryRunBox.IsChecked == true;
+        var text = "Sẽ làm:\n• " + string.Join("\n• ", fix.Actions) +
+                   (dryRun ? "\n\n(Chế độ chạy thử: chỉ mô phỏng, máy không bị thay đổi.)" : "") +
+                   "\n\nĐồng ý thực hiện?";
+        if (MessageBox.Show(text, fix.Title, MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No)
+            != MessageBoxResult.Yes) return;
 
         _cts = new CancellationTokenSource();
         SetBusy(true);
-        StatusText.Text = "Đang khởi động lại Print Spooler...";
+        StatusText.Text = "Đang thực hiện...";
         try
         {
-            await PrinterFixes.RestartSpoolerAsync(_cts.Token);
-            StatusText.Text = "Đã khởi động lại Print Spooler. Bấm Chẩn đoán để kiểm tra lại.";
+            var executor = new FixExecutor(new RestorePointService());
+            var progress = new Progress<string>(m => StatusText.Text = m);
+            var result = await executor.RunAsync(fix, new FixOptions { DryRun = dryRun, CreateRestorePoint = false },
+                progress, _cts.Token);
+
+            StatusText.Text = result.Outcome switch
+            {
+                FixOutcome.Succeeded => result.Message + " Bấm Chẩn đoán để kiểm tra lại.",
+                FixOutcome.Simulated => "Chạy thử xong, máy chưa bị thay đổi. Bỏ tick \"Chạy thử\" để làm thật.",
+                FixOutcome.Blocked => "Đã khóa: " + result.Message,
+                FixOutcome.StillPresent => "Đã làm nhưng chưa có hiệu lực: " + result.Message,
+                FixOutcome.Unverified => "Đã làm nhưng chưa kiểm tra lại được: " + result.Message,
+                FixOutcome.Cancelled => "Đã dừng.",
+                _ => "Không làm được: " + result.Message
+            };
         }
         catch (OperationCanceledException)
         {
@@ -88,39 +111,8 @@ public partial class PrinterView : UserControl
         }
         catch (Exception ex)
         {
-            StatusText.Text = "Không khởi động lại được Spooler, xem nhật ký.";
-            Logger.Error($"Lỗi khởi động lại Spooler: {ex}");
-        }
-        finally
-        {
-            SetBusy(false);
-        }
-    }
-
-    private async void ClearQueueButton_Click(object sender, RoutedEventArgs e)
-    {
-        var ask = MessageBox.Show(
-            "Xóa TOÀN BỘ lệnh in đang chờ của mọi máy in?\n" +
-            "Spooler sẽ được tắt rồi bật lại. Các tài liệu đang chờ in sẽ mất, phải in lại.",
-            "Xác nhận xóa hàng đợi in", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-        if (ask != MessageBoxResult.Yes) return;
-
-        _cts = new CancellationTokenSource();
-        SetBusy(true);
-        StatusText.Text = "Đang xóa hàng đợi in...";
-        try
-        {
-            int n = await PrinterFixes.ClearQueueAsync(_cts.Token);
-            StatusText.Text = $"Đã xóa hàng đợi in ({n} file). Bấm Chẩn đoán để kiểm tra lại.";
-        }
-        catch (OperationCanceledException)
-        {
-            StatusText.Text = "Đã dừng.";
-        }
-        catch (Exception ex)
-        {
-            StatusText.Text = "Không xóa được hàng đợi in, xem nhật ký.";
-            Logger.Error($"Lỗi xóa hàng đợi in: {ex}");
+            StatusText.Text = "Có lỗi, xem nhật ký.";
+            Logger.Error($"Lỗi sửa máy in: {ex}");
         }
         finally
         {
