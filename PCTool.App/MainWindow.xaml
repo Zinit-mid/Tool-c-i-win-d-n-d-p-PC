@@ -25,6 +25,9 @@
             <TabItem Header="Dọn dẹp rác" Padding="12,8">
                 <views:CleanupView />
             </TabItem>
+            <TabItem Header="Cài nhanh ứng dụng" Padding="12,8">
+                <views:AppInstallerView />
+            </TabItem>
             <TabItem Header="Thông số phần cứng" Padding="12,8">
                 <views:HardwareView />
             </TabItem>

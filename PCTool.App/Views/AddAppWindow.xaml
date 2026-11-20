@@ -1,0 +1,32 @@
+<Window x:Class="PCTool.Views.AddAppWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Thêm ứng dụng" Width="480" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <StackPanel Margin="16">
+        <TextBlock Text="Tên hiển thị" />
+        <TextBox x:Name="NameBox" Height="30" Margin="0,4,0,10" VerticalContentAlignment="Center" MaxLength="80" />
+
+        <TextBlock Text="Cách cài" />
+        <ComboBox x:Name="KindBox" Height="30" Margin="0,4,0,10" SelectedIndex="0" SelectionChanged="KindBox_SelectionChanged">
+            <ComboBoxItem Content="Cài bằng winget (khuyên dùng)" />
+            <ComboBoxItem Content="Lối tắt mở trang web (ra Desktop)" />
+            <ComboBoxItem Content="Mở trang tải, tự cài" />
+        </ComboBox>
+
+        <TextBlock x:Name="ValueLabel" Text="ID winget (ví dụ: 7zip.7zip)" />
+        <TextBox x:Name="ValueBox" Height="30" Margin="0,4,0,4" VerticalContentAlignment="Center" MaxLength="2048" />
+        <TextBlock x:Name="HintText" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,10"
+                   Text="Tìm ID bằng lệnh winget search tên-app, hoặc xem trên winget.run." />
+
+        <TextBlock Text="Nhóm (không bắt buộc)" />
+        <TextBox x:Name="GroupBox" Height="30" Margin="0,4,0,10" VerticalContentAlignment="Center" MaxLength="40" />
+
+        <TextBlock x:Name="ErrorText" Foreground="#FFB42318" TextWrapping="Wrap" Margin="0,0,0,10" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Thêm" Width="90" Height="36" Margin="0,0,10,0" IsDefault="True" Click="OkButton_Click" />
+            <Button Content="Hủy" Width="90" Height="36" IsCancel="True" />
+        </StackPanel>
+    </StackPanel>
+</Window>
