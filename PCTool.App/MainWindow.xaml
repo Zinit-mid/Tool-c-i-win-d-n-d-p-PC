@@ -6,11 +6,22 @@
         MinHeight="480" MinWidth="760" WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="150" />
         </Grid.RowDefinitions>
 
-        <TabControl Grid.Row="0" TabStripPlacement="Left" Margin="6">
+        <DockPanel Grid.Row="0" Margin="10,6,10,0" LastChildFill="True">
+            <Button x:Name="CheckUpdateButton" DockPanel.Dock="Right" Content="Kiểm tra cập nhật" Padding="10,3"
+                    Click="CheckUpdateButton_Click" />
+            <Button x:Name="InstallUpdateButton" DockPanel.Dock="Right" Content="Cập nhật ngay" Padding="10,3"
+                    Margin="0,0,8,0" Visibility="Collapsed" Click="InstallUpdateButton_Click" />
+            <ProgressBar x:Name="UpdateProgress" DockPanel.Dock="Right" Width="120" Height="8" Margin="0,0,8,0"
+                         Minimum="0" Maximum="100" Visibility="Collapsed" />
+            <TextBlock x:Name="UpdateText" Foreground="Gray" VerticalAlignment="Center" />
+        </DockPanel>
+
+        <TabControl Grid.Row="1" TabStripPlacement="Left" Margin="6">
             <TabItem Header="Dọn dẹp rác" Padding="12,8">
                 <views:CleanupView />
             </TabItem>
@@ -27,8 +38,7 @@
                     Detail="Gỡ theo từng mức: gỡ chuẩn, dừng service/driver, Safe Mode, dọn tàn dư. (Sắp làm)" />
             </TabItem>
             <TabItem Header="Chẩn đoán máy in" Padding="12,8">
-                <views:PlaceholderView Title="Chẩn đoán máy in"
-                    Detail="Kiểm tra kết nối, driver, spooler, hàng đợi in và log lỗi. (Sắp làm)" />
+                <views:PrinterView />
             </TabItem>
             <TabItem Header="Windows Defender" Padding="12,8">
                 <views:PlaceholderView Title="Windows Defender"
@@ -40,7 +50,7 @@
             </TabItem>
         </TabControl>
 
-        <GroupBox Grid.Row="1" Header="Nhật ký thao tác" Margin="6,0,6,6">
+        <GroupBox Grid.Row="2" Header="Nhật ký thao tác" Margin="6,0,6,6">
             <TextBox x:Name="LogBox" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
                      FontFamily="Consolas" FontSize="12" TextWrapping="NoWrap"
                      HorizontalScrollBarVisibility="Auto" />

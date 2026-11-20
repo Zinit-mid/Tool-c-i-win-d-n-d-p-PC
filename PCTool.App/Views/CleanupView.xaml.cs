@@ -25,6 +25,25 @@ public partial class CleanupView : UserControl
         if (!busy) Progress.Value = 0;
     }
 
+    /// <summary>
+    /// Làm mới DataGrid. Nếu người dùng đang tick/sửa dở một ô (lúc quét lâu họ vẫn bấm được),
+    /// Items.Refresh() sẽ ném InvalidOperationException ("Refresh is not allowed during an
+    /// AddNew or EditItem transaction"), nên phải commit (hoặc hủy) giao dịch sửa trước.
+    /// </summary>
+    private void RefreshGrid()
+    {
+        if (!ItemsGrid.CommitEdit(DataGridEditingUnit.Row, true))
+            ItemsGrid.CancelEdit(DataGridEditingUnit.Row);
+
+        if (ItemsGrid.Items is System.ComponentModel.IEditableCollectionView ecv)
+        {
+            if (ecv.IsAddingNew) ecv.CancelNew();
+            if (ecv.IsEditingItem) ecv.CancelEdit();
+        }
+
+        ItemsGrid.Items.Refresh();
+    }
+
     private async void ScanButton_Click(object sender, RoutedEventArgs e)
     {
         _cts = new CancellationTokenSource();
@@ -44,7 +63,7 @@ public partial class CleanupView : UserControl
                 Progress.Value = (i + 1) * 100.0 / items.Count;
             }
 
-            ItemsGrid.Items.Refresh();
+            RefreshGrid();
             long total = _items.Sum(i => i.SizeBytes);
             StatusText.Text = $"Quét xong. Tổng có thể dọn: {CleanupItem.FormatSize(total)}";
             Logger.Info($"Quét xong, tổng {CleanupItem.FormatSize(total)}.");
@@ -53,6 +72,11 @@ public partial class CleanupView : UserControl
         {
             StatusText.Text = "Đã dừng.";
             Logger.Warn("Đã dừng quét.");
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = "Quét lỗi, xem nhật ký.";
+            Logger.Error($"Lỗi khi quét: {ex}");
         }
         finally
         {
