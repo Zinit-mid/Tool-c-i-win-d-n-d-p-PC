@@ -7,6 +7,10 @@ namespace PCTool.Views;
 
 public partial class ReinstallView : UserControl
 {
+    private readonly FixExecutor _executor = new(new RestorePointService());
+    private UsbScanResult? _lastScan;
+    private IsoInfo? _lastIso;
+
     public ReinstallView()
     {
         InitializeComponent();
@@ -24,6 +28,11 @@ public partial class ReinstallView : UserControl
             var ctx = new UsbScanContext(IsoBox.Text, BackupBox.Text);
             var result = await new UsbDriveScanner().ScanAsync(ctx, CancellationToken.None);
             ResultBox.Text = UsbReport.ToText(result);
+            _lastScan = result;
+            UsbCombo.ItemsSource = result.Candidates.Where(c => c.Eligible)
+                .Select(c => new UsbChoice(c, $"Ổ số {c.Disk.Number} - {c.Disk.Name} - {UsbReport.Size(c.Disk.Size)} - serial {c.Disk.Serial}")).ToList();
+            UsbCombo.DisplayMemberPath = nameof(UsbChoice.Text);
+            if (UsbCombo.Items.Count > 0) UsbCombo.SelectedIndex = 0;
 
             var ok = result.Candidates.Count(c => c.Eligible);
             StatusText.Text = result.Candidates.Count == 0
@@ -69,6 +78,7 @@ public partial class ReinstallView : UserControl
         {
             var info = await new IsoInspector().InspectAsync(path, CancellationToken.None);
             var verdict = IsoInspector.Evaluate(info);
+            _lastIso = verdict.UsableForUsb ? info : null;
             ResultBox.Text = IsoInspector.ToText(info, verdict);
             StatusText.Text = verdict.UsableForUsb
                 ? "Xong: ISO dùng được để làm USB cài. Chưa có gì bị ghi hay xóa."
@@ -86,6 +96,85 @@ public partial class ReinstallView : UserControl
             Progress.IsIndeterminate = false;
             CheckIsoButton.IsEnabled = true;
             ScanButton.IsEnabled = true;
+        }
+    }
+
+    private sealed record UsbChoice(UsbCandidate Candidate, string Text);
+
+    private async void WriteButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (SettingsService.Default.SafeMode)
+        {
+            StatusText.Text = "Đã khóa: " + SettingsService.SafeModeMessage;
+            return;
+        }
+        if (_lastScan is null || UsbCombo.SelectedItem is not UsbChoice choice)
+        {
+            StatusText.Text = "Chưa có ổ USB để chọn. Hãy bấm Quét ổ USB trước (và cắm USB từ 32 GB).";
+            return;
+        }
+        if (_lastIso is null || !string.Equals(_lastIso.Path, IsoBox.Text.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            StatusText.Text = "Chưa có ISO hợp lệ: hãy nhập đường dẫn ISO rồi bấm Kiểm tra ISO (ISO phải dùng được).";
+            return;
+        }
+        if (AckBox.IsChecked != true)
+        {
+            StatusText.Text = "Hãy tick ô xác nhận \"Tôi hiểu: toàn bộ dữ liệu trên ổ USB sẽ bị xóa\".";
+            return;
+        }
+
+        UsbWriteFix fix;
+        try
+        {
+            fix = new UsbWriteFix(choice.Candidate, ConfirmBox.Text, _lastIso, BackupBox.Text.Trim().Length > 0 ? BackupBox.Text.Trim() : null);
+        }
+        catch (ArgumentException ex)
+        {
+            StatusText.Text = "Chưa thể ghi: " + ex.Message + " (Chưa làm gì cả.)";
+            return;
+        }
+
+        bool dryRun = DryRunBox.IsChecked == true;
+        var text = "Sẽ làm:\n• " + string.Join("\n• ", fix.Actions) +
+                   (dryRun ? "\n\n(Chế độ chạy thử: chỉ mô phỏng, USB không bị thay đổi.)" : "\n\nĐÂY LÀ THAO TÁC XÓA, KHÔNG KHÔI PHỤC ĐƯỢC.") +
+                   "\n\nĐồng ý thực hiện?";
+        if (MessageBox.Show(text, fix.Title, MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No)
+            != MessageBoxResult.Yes) return;
+
+        WriteButton.IsEnabled = false;
+        ScanButton.IsEnabled = false;
+        CheckIsoButton.IsEnabled = false;
+        Progress.IsIndeterminate = true;
+        StatusText.Text = "Đang thực hiện... (đừng rút USB, đừng đóng app)";
+        try
+        {
+            var progress = new Progress<string>(m => StatusText.Text = m);
+            var r = await _executor.RunAsync(fix, SettingsService.Default.BuildOptions(dryRun), progress, CancellationToken.None);
+            StatusText.Text = r.Outcome switch
+            {
+                FixOutcome.Succeeded => "Xong: " + r.Message + " Bước tiếp theo (hướng dẫn khởi động từ USB) sẽ có ở giai đoạn sau; hiện hãy tự thử trên máy ảo hoặc máy phụ.",
+                FixOutcome.Simulated => "Chạy thử xong, USB chưa bị thay đổi gì. Bỏ tick \"Chạy thử\" để ghi thật.",
+                FixOutcome.Blocked => "Đã khóa: " + r.Message,
+                FixOutcome.StillPresent => "Ghi xong nhưng kiểm tra lại thấy chưa đạt: " + r.Message + " Xem nhật ký bên dưới.",
+                FixOutcome.Unverified => "Đã ghi nhưng chưa kiểm tra lại được: " + r.Message,
+                FixOutcome.Cancelled => "Đã dừng. USB có thể đang dở dang, hãy ghi lại.",
+                _ => "Không làm được: " + r.Message
+            };
+            ConfirmBox.Text = "";
+            AckBox.IsChecked = false;
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = "Có lỗi, xem nhật ký. USB có thể đang dở dang.";
+            Logger.Error($"Ghi USB lỗi: {ex}");
+        }
+        finally
+        {
+            Progress.IsIndeterminate = false;
+            WriteButton.IsEnabled = true;
+            ScanButton.IsEnabled = true;
+            CheckIsoButton.IsEnabled = true;
         }
     }
 

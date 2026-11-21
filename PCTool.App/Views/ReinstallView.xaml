@@ -1,11 +1,12 @@
 <UserControl x:Class="PCTool.Views.ReinstallView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="280" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
@@ -40,6 +41,35 @@
                 <Button x:Name="ScanButton" Content="Quét ổ USB" Width="130" Height="34" Margin="0,0,10,0" Click="ScanButton_Click" />
                 <Button x:Name="CopyButton" Content="Sao chép kết quả" Width="140" Height="34" IsEnabled="False" Click="CopyButton_Click" />
             </WrapPanel>
+
+            <GroupBox Header="Ghi USB cài Windows (XÓA SẠCH ổ USB được chọn)" Padding="10" Margin="0,12,0,0" Foreground="#B00020">
+                <StackPanel>
+                    <TextBlock Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,6"
+                               Text="Cần làm trước: (1) bấm Quét ổ USB, (2) nhập đường dẫn ISO rồi bấm Kiểm tra ISO và ISO phải dùng được. Ghi USB sẽ xóa toàn bộ dữ liệu trên ổ USB bạn chọn, tạo USB khởi động UEFI (FAT32 cài đặt + NTFS dữ liệu). Chỉ tác động lên đúng ổ USB đã chọn; không đụng ổ Windows hay ổ khác. Mặc định chỉ CHẠY THỬ." />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="110" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="Chọn ổ USB:" VerticalAlignment="Center" Foreground="Black" />
+                        <ComboBox x:Name="UsbCombo" Grid.Row="0" Grid.Column="1" Margin="0,2" />
+                        <TextBlock Grid.Row="1" Text="Gõ lại mã:" VerticalAlignment="Center" Foreground="Black" />
+                        <TextBox x:Name="ConfirmBox" Grid.Row="1" Grid.Column="1" Margin="0,2" Width="200" HorizontalAlignment="Left" />
+                    </Grid>
+                    <TextBlock Foreground="Gray" TextWrapping="Wrap" Margin="0,2,0,6"
+                               Text="Mã xác nhận: số ổ, dấu gạch ngang, 4 ký tự cuối của serial (đã hiện ở phần Kết quả sau khi quét, ví dụ 3-1234). Phải tự gõ, app không điền sẵn." />
+                    <CheckBox x:Name="AckBox" Foreground="Black" Margin="0,0,0,4" TextBlock.FontWeight="SemiBold"
+                              Content="Tôi hiểu: TOÀN BỘ dữ liệu trên ổ USB đã chọn sẽ bị xóa vĩnh viễn, không khôi phục được." />
+                    <WrapPanel>
+                        <Button x:Name="WriteButton" Content="Ghi USB" Width="130" Height="34" Margin="0,4,10,0" Click="WriteButton_Click" />
+                        <CheckBox x:Name="DryRunBox" Content="Chạy thử (không thay đổi gì)" IsChecked="True" VerticalAlignment="Center" Foreground="Black" Margin="0,4,0,0" />
+                    </WrapPanel>
+                </StackPanel>
+            </GroupBox>
         </StackPanel>
 
         <GroupBox Grid.Row="2" Header="Kết quả">
@@ -52,4 +82,5 @@
             <TextBlock x:Name="StatusText" Margin="0,6,0,0" TextWrapping="Wrap" />
         </StackPanel>
     </Grid>
+    </ScrollViewer>
 </UserControl>
