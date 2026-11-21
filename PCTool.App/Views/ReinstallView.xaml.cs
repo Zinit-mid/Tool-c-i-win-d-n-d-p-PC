@@ -44,6 +44,51 @@ public partial class ReinstallView : UserControl
         }
     }
 
+    private void BrowseIsoButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dlg = new Microsoft.Win32.OpenFileDialog { Filter = "File ISO (*.iso)|*.iso", Title = "Chọn file ISO Windows" };
+        if (dlg.ShowDialog() == true) IsoBox.Text = dlg.FileName;
+    }
+
+    private async void CheckIsoButton_Click(object sender, RoutedEventArgs e)
+    {
+        var path = IsoBox.Text.Trim();
+        if (!IsoInspector.IsValidIsoPath(path, out var err))
+        {
+            StatusText.Text = err + " (Chưa làm gì cả.)";
+            return;
+        }
+
+        CheckIsoButton.IsEnabled = false;
+        ScanButton.IsEnabled = false;
+        CopyButton.IsEnabled = false;
+        Progress.IsIndeterminate = true;
+        StatusText.Text = "Đang kiểm tra ISO (gắn tạm chỉ đọc, có thể mất vài chục giây)...";
+
+        try
+        {
+            var info = await new IsoInspector().InspectAsync(path, CancellationToken.None);
+            var verdict = IsoInspector.Evaluate(info);
+            ResultBox.Text = IsoInspector.ToText(info, verdict);
+            StatusText.Text = verdict.UsableForUsb
+                ? "Xong: ISO dùng được để làm USB cài. Chưa có gì bị ghi hay xóa."
+                : "Xong: ISO chưa dùng được, xem lý do ở phần Kết quả.";
+            CopyButton.IsEnabled = true;
+            Logger.Info($"Kiểm tra ISO (chỉ đọc): {info.Images.Count} edition, dùng được: {verdict.UsableForUsb}.");
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = "Chưa kiểm tra được ISO: " + ex.Message + " (Máy không bị thay đổi gì.)";
+            Logger.Error("Kiểm tra ISO lỗi: " + ex.Message);
+        }
+        finally
+        {
+            Progress.IsIndeterminate = false;
+            CheckIsoButton.IsEnabled = true;
+            ScanButton.IsEnabled = true;
+        }
+    }
+
     private void CopyButton_Click(object sender, RoutedEventArgs e)
     {
         try { Clipboard.SetText(ResultBox.Text); StatusText.Text = "Đã sao chép kết quả."; }

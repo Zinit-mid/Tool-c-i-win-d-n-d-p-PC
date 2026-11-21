@@ -10,9 +10,9 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Margin="0,0,0,10">
-            <TextBlock Text="Cài lại Windows: bước 0 - xem các ổ USB" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Text="Cài lại Windows: kiểm tra USB và file ISO" FontSize="22" FontWeight="SemiBold" />
             <TextBlock Foreground="Gray" Margin="0,4,0,0" TextWrapping="Wrap"
-                       Text="Đây mới là bước đầu của tính năng Cài lại Windows: chỉ LIỆT KÊ ổ USB và cho biết ổ nào đủ điều kiện làm USB cài. Chưa ghi, chưa xóa, chưa format gì (dùng được cả khi bật Chế độ an toàn). Chỉ ổ gắn qua USB mới hiện; ổ Windows, ổ chứa file ISO và ổ chứa thư mục sao lưu luôn bị loại." />
+                       Text="Mới là các bước đầu của tính năng Cài lại Windows, chỉ KIỂM TRA: (1) liệt kê ổ USB và cho biết ổ nào đủ điều kiện, (2) kiểm tra file ISO Windows bạn đã tải từ Microsoft. Chưa ghi, chưa xóa, chưa format gì. Kiểm tra ISO có gắn ISO tạm ở chế độ chỉ đọc rồi gỡ ra. Chỉ ổ gắn qua USB mới hiện; ổ Windows, ổ chứa ISO và ổ chứa thư mục sao lưu luôn bị loại." />
         </StackPanel>
 
         <StackPanel Grid.Row="1" Margin="0,0,0,10">
@@ -21,6 +21,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="110" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -28,6 +29,10 @@
                 </Grid.RowDefinitions>
                 <TextBlock Grid.Row="0" Text="File ISO:" VerticalAlignment="Center" />
                 <TextBox x:Name="IsoBox" Grid.Row="0" Grid.Column="1" Margin="0,2" />
+                <WrapPanel Grid.Row="0" Grid.Column="2" Margin="6,0,0,0">
+                    <Button x:Name="BrowseIsoButton" Content="Chọn file..." Width="90" Margin="0,2,6,2" Click="BrowseIsoButton_Click" />
+                    <Button x:Name="CheckIsoButton" Content="Kiểm tra ISO" Width="100" Margin="0,2" Click="CheckIsoButton_Click" />
+                </WrapPanel>
                 <TextBlock Grid.Row="1" Text="Thư mục sao lưu:" VerticalAlignment="Center" />
                 <TextBox x:Name="BackupBox" Grid.Row="1" Grid.Column="1" Margin="0,2" />
             </Grid>
