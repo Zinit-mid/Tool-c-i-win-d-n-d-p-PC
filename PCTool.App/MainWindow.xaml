@@ -50,8 +50,7 @@
                     Detail="Tìm file/thư mục trùng, gom thư mục giống nhau, dọn bản sao lưu thừa, sắp xếp Downloads/Desktop. (Sắp làm)" />
             </TabItem>
             <TabItem Header="Sao lưu / Khôi phục app" Padding="12,8">
-                <views:PlaceholderView Title="Sao lưu / Khôi phục app"
-                    Detail="Quét app đã cài, lưu danh sách + dữ liệu, khôi phục bằng winget sau khi cài Win. (Sắp làm)" />
+                <views:BackupRestoreView />
             </TabItem>
             <TabItem Header="Gỡ phần mềm cứng đầu" Padding="12,8">
                 <views:PlaceholderView Title="Gỡ phần mềm cứng đầu"
