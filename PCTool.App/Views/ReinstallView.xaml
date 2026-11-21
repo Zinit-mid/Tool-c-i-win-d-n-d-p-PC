@@ -27,12 +27,19 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <TextBlock Grid.Row="0" Text="File ISO:" VerticalAlignment="Center" />
                 <TextBox x:Name="IsoBox" Grid.Row="0" Grid.Column="1" Margin="0,2" />
                 <WrapPanel Grid.Row="0" Grid.Column="2" Margin="6,0,0,0">
                     <Button x:Name="BrowseIsoButton" Content="Chọn file..." Width="90" Margin="0,2,6,2" Click="BrowseIsoButton_Click" />
                     <Button x:Name="CheckIsoButton" Content="Kiểm tra ISO" Width="100" Margin="0,2" Click="CheckIsoButton_Click" />
+                </WrapPanel>
+                <TextBlock Grid.Row="2" Text="Tải ISO:" VerticalAlignment="Center" />
+                <WrapPanel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,2">
+                    <Button Content="Mở trang tải Windows 11" Width="170" Margin="0,0,8,0" Tag="11" Click="DownloadPage_Click" />
+                    <Button Content="Mở trang tải Windows 10" Width="170" Tag="10" Click="DownloadPage_Click" />
+                    <TextBlock Foreground="Gray" Margin="10,0,0,0" VerticalAlignment="Center" Text="(chỉ mở trình duyệt, bạn tự tải)" />
                 </WrapPanel>
                 <TextBlock Grid.Row="1" Text="Thư mục sao lưu:" VerticalAlignment="Center" />
                 <TextBox x:Name="BackupBox" Grid.Row="1" Grid.Column="1" Margin="0,2" />
@@ -64,6 +71,10 @@
                                Text="Mã xác nhận: số ổ, dấu gạch ngang, 4 ký tự cuối của serial (đã hiện ở phần Kết quả sau khi quét, ví dụ 3-1234). Phải tự gõ, app không điền sẵn." />
                     <CheckBox x:Name="AckBox" Foreground="Black" Margin="0,0,0,4" TextBlock.FontWeight="SemiBold"
                               Content="Tôi hiểu: TOÀN BỘ dữ liệu trên ổ USB đã chọn sẽ bị xóa vĩnh viễn, không khôi phục được." />
+                    <CheckBox x:Name="AnswerBox" Foreground="Black" Margin="0,4,0,2"
+                              Content="Tạo kèm file autounattend.xml tối thiểu (chọn sẵn ngôn ngữ của ISO, chấp nhận điều khoản, bỏ qua màn nhập key; VẪN để bạn tự chọn ổ cài)" />
+                    <CheckBox x:Name="BypassBox" Foreground="#B00020" Margin="16,0,0,2"
+                              Content="Windows 11 máy cũ: bỏ qua kiểm tra TPM/CPU/RAM (KHÔNG chính thức, Microsoft có thể không hỗ trợ/cập nhật máy này)" />
                     <WrapPanel>
                         <Button x:Name="WriteButton" Content="Ghi USB" Width="130" Height="34" Margin="0,4,10,0" Click="WriteButton_Click" />
                         <CheckBox x:Name="DryRunBox" Content="Chạy thử (không thay đổi gì)" IsChecked="True" VerticalAlignment="Center" Foreground="Black" Margin="0,4,0,0" />

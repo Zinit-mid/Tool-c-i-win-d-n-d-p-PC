@@ -99,6 +99,20 @@ public partial class ReinstallView : UserControl
         }
     }
 
+    private void DownloadPage_Click(object sender, RoutedEventArgs e)
+    {
+        var url = (string)((Button)sender).Tag == "11" ? IsoDownloadPages.Windows11 : IsoDownloadPages.Windows10;
+        try
+        {
+            IsoDownloadPages.Open(url, u => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(u) { UseShellExecute = true }));
+            StatusText.Text = "Đã mở trang tải của Microsoft. Bạn tự tải ISO, rồi chọn file ở ô File ISO.";
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            StatusText.Text = "Không mở được trình duyệt. Hãy tự vào: " + url;
+        }
+    }
+
     private sealed record UsbChoice(UsbCandidate Candidate, string Text);
 
     private async void WriteButton_Click(object sender, RoutedEventArgs e)
@@ -127,7 +141,14 @@ public partial class ReinstallView : UserControl
         UsbWriteFix fix;
         try
         {
-            fix = new UsbWriteFix(choice.Candidate, ConfirmBox.Text, _lastIso, BackupBox.Text.Trim().Length > 0 ? BackupBox.Text.Trim() : null);
+            UsbWriteOptions? options = null;
+            if (AnswerBox.IsChecked == true || BypassBox.IsChecked == true)
+            {
+                var x64 = _lastIso.Images.Where(i => i.Arch == "x64").ToList();
+                var lang = x64.SelectMany(i => i.Languages).FirstOrDefault() ?? "";
+                options = new UsbWriteOptions(new AnswerFileOptions(lang, null, BypassBox.IsChecked == true));
+            }
+            fix = new UsbWriteFix(choice.Candidate, ConfirmBox.Text, _lastIso, BackupBox.Text.Trim().Length > 0 ? BackupBox.Text.Trim() : null, null, options);
         }
         catch (ArgumentException ex)
         {

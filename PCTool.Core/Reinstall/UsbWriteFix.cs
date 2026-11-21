@@ -38,7 +38,7 @@ public static class UsbLayoutPlanner
 /// <summary>Kiểm tra lại USB sau khi ghi (đọc kết quả từ script chỉ đọc). Hàm thuần để test được.</summary>
 public static class UsbWriteVerifier
 {
-    public static IReadOnlyList<string> Problems(string json, int diskNumber, IsoInfo iso, bool split)
+    public static IReadOnlyList<string> Problems(string json, int diskNumber, IsoInfo iso, bool split, bool expectAnswer = false)
     {
         var p = new List<string>();
         JsonDocument doc;
@@ -55,6 +55,7 @@ public static class UsbWriteVerifier
             if (Str(r, "dataLabel") != UsbLayoutPlanner.DataLabel || Str(r, "dataFs") != "NTFS") p.Add("Phân vùng dữ liệu không đúng (cần NTFS, nhãn PCTOOL-DATA).");
             if (!Bool(r, "efi")) p.Add("Thiếu efi\\boot\\bootx64.efi trên USB.");
             if (!Bool(r, "bootWim")) p.Add("Thiếu sources\\boot.wim trên USB.");
+            if (expectAnswer && !Bool(r, "answer")) p.Add("Thiếu file autounattend.xml trên USB.");
 
             long expected = split ? iso.InstallWimBytes : iso.HasInstallWim ? iso.InstallWimBytes : iso.InstallEsdBytes;
             long actual = Num(r, "installBytes");
@@ -97,10 +98,12 @@ public sealed class UsbWriteFix : IFix
     private readonly UsbScanContext _ctx;
     private readonly UsbLayout _layout;
     private readonly bool _split;
+    private readonly UsbWriteOptions _options;
+    private readonly string? _answerXml;
     private readonly ScriptRunner _run;
     private string? _boot, _data;
 
-    public UsbWriteFix(UsbCandidate candidate, string typedConfirmation, IsoInfo iso, string? backupFolder = null, ScriptRunner? run = null)
+    public UsbWriteFix(UsbCandidate candidate, string typedConfirmation, IsoInfo iso, string? backupFolder = null, ScriptRunner? run = null, UsbWriteOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(candidate);
         ArgumentNullException.ThrowIfNull(iso);
@@ -115,6 +118,14 @@ public sealed class UsbWriteFix : IFix
             throw new ArgumentException("ISO chưa dùng được: " + string.Join(" ", verdict.Blockers), nameof(iso));
         if (!EmbedSafe(d.UniqueId) || !EmbedSafe(d.Serial))
             throw new ArgumentException("Mã/serial của ổ có ký tự lạ, không dùng để kiểm tra lại an toàn được.", nameof(candidate));
+
+        _options = options ?? UsbWriteOptions.Default;
+        if (_options.Answer is { } ans)
+        {
+            var errs = AnswerFileBuilder.Validate(ans, iso);
+            if (errs.Count > 0) throw new ArgumentException("File autounattend không hợp lệ: " + string.Join(" ", errs), nameof(options));
+            _answerXml = AnswerFileBuilder.Build(ans);
+        }
 
         _layout = UsbLayoutPlanner.Plan(d.Size, iso.IsoSizeBytes, out var lerr)
             ?? throw new ArgumentException(lerr, nameof(candidate));
@@ -148,6 +159,11 @@ public sealed class UsbWriteFix : IFix
                 "Kiểm tra lại USB: phân vùng, nhãn, bootx64.efi, boot.wim, dung lượng file cài",
                 "Không đụng tới ổ nào khác, không đụng tới ổ Windows. Quá trình có thể mất 10-30 phút, đừng rút USB"
             };
+            if (_options.Answer is { } a)
+                list.Insert(4, $"Ghi file autounattend.xml tối thiểu vào USB (ngôn ngữ {a.Language}, chấp nhận điều khoản, bỏ qua màn nhập key" +
+                    (a.EditionIndex is { } ei ? $", chọn sẵn phiên bản số {ei}" : "") +
+                    (a.BypassWin11Checks ? "; BỎ QUA kiểm tra phần cứng Windows 11 (không chính thức, Microsoft có thể không hỗ trợ/cập nhật máy này)" : "") +
+                    "). File này KHÔNG chọn và KHÔNG xóa ổ cài: bạn vẫn tự chọn ổ ở màn hình của Microsoft");
             return list;
         }
     }
@@ -202,6 +218,17 @@ public sealed class UsbWriteFix : IFix
                 " USB hiện chưa dùng được, hãy ghi lại.");
         }
 
+        if (_answerXml is not null)
+        {
+            progress.Report("Đang ghi file autounattend.xml...");
+            var r3 = await _run(BuildAnswerScript(_boot), ct);
+            if (r3.ExitCode != 0 || LastLine(r3.Output) != "OK")
+            {
+                Logger.Error("Ghi autounattend lỗi: " + r3.Error + " | " + r3.Output);
+                return FixResult.Failed("Ghi file autounattend.xml không thành công: " + Short(r3.Error, r3.Output) + " USB chưa dùng được, hãy ghi lại.");
+            }
+        }
+
         Logger.Info("Đã chép bộ cài vào USB, chờ kiểm tra lại.");
         return FixResult.Succeeded($"Đã ghi USB cài Windows (khởi động {_boot}:, dữ liệu {_data}:).");
     }
@@ -211,7 +238,7 @@ public sealed class UsbWriteFix : IFix
         if (_boot is null || _data is null) return false;
         var r = await _run(BuildVerifyScript(_boot, _data), ct);
         if (r.ExitCode != 0 || string.IsNullOrWhiteSpace(r.Output)) return false;
-        var problems = UsbWriteVerifier.Problems(LastLine(r.Output) ?? "", _candidate.Disk.Number, _iso, _split);
+        var problems = UsbWriteVerifier.Problems(LastLine(r.Output) ?? "", _candidate.Disk.Number, _iso, _split, _answerXml is not null);
         foreach (var p in problems) Logger.Warn("Kiểm tra lại USB: " + p);
         return problems.Count == 0;
     }
@@ -279,6 +306,22 @@ try {
 """;
     }
 
+    public string BuildAnswerScript(string bootLetter)
+    {
+        if (!Letter.IsMatch(bootLetter)) throw new ArgumentException("Ký tự ổ không hợp lệ.", nameof(bootLetter));
+        if (_answerXml is null) throw new InvalidOperationException("Không có file autounattend để ghi.");
+        var b64 = Convert.ToBase64String(new System.Text.UTF8Encoding(false).GetBytes(_answerXml));
+        return $$"""
+$ErrorActionPreference = 'Stop'
+$boot = '{{bootLetter}}'
+if ((Get-Partition -DriveLetter $boot).DiskNumber -ne {{_candidate.Disk.Number}}) { throw 'Phân vùng đích không nằm trên ổ USB đã chọn.' }
+$dst = $boot + ':\autounattend.xml'
+[System.IO.File]::WriteAllBytes($dst, [System.Convert]::FromBase64String('{{b64}}'))
+if (-not (Test-Path -LiteralPath $dst)) { throw 'Không ghi được autounattend.xml.' }
+'OK'
+""";
+    }
+
     public string BuildVerifyScript(string bootLetter, string dataLetter)
     {
         if (!Letter.IsMatch(bootLetter) || !Letter.IsMatch(dataLetter)) throw new ArgumentException("Ký tự ổ không hợp lệ.");
@@ -303,6 +346,7 @@ foreach ($f in $inst) { $sum += $f.Length }
   dataLabel = "$($dv.FileSystemLabel)"
   dataFs = "$($dv.FileSystem)"
   efi = [bool](Test-Path -LiteralPath ($root + 'efi\boot\bootx64.efi'))
+  answer = [bool](Test-Path -LiteralPath ($root + 'autounattend.xml'))
   bootWim = [bool](Test-Path -LiteralPath ($root + 'sources\boot.wim'))
   hasSwm = [bool](@($inst | Where-Object { $_.Name -like '*.swm' }).Count -gt 0)
   hasWim = [bool](@($inst | Where-Object { $_.Name -eq 'install.wim' }).Count -gt 0)
