@@ -1,0 +1,63 @@
+<UserControl x:Class="PCTool.Views.DirectReinstallView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16">
+            <TextBlock Text="Cài lại Windows trực tiếp trên máy" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Foreground="Gray" Margin="0,4,0,10" TextWrapping="Wrap"
+                       Text="PCTool chỉ KIỂM TRA rồi MỞ công cụ của Microsoft; bạn tự chọn và xác nhận ở màn hình của Microsoft. PCTool không tự bấm, không tự xóa, không tự khởi động lại máy. CHƯA thử trên máy thật: hãy thử trong máy ảo trước, và chỉ làm khi bản sao lưu đã được kiểm tra." />
+
+            <GroupBox Header="1. Chọn kiểu cài lại" Padding="10" Margin="0,0,0,8">
+                <StackPanel>
+                    <RadioButton x:Name="C1Radio" GroupName="Mode" IsChecked="True" Content="C1. Sửa Windows, giữ app + file (rủi ro thấp)" Margin="0,0,0,4" />
+                    <RadioButton x:Name="C2Radio" GroupName="Mode" Content="C2. Giữ file cá nhân, bỏ app (rủi ro trung bình)" Margin="0,0,0,4" />
+                    <RadioButton x:Name="C3Radio" GroupName="Mode" Content="C3. Xóa sạch, không giữ gì (RỦI RO CAO)" Margin="0,0,0,4" />
+                    <RadioButton x:Name="C4Radio" GroupName="Mode" Content="C4. Đặt lại PC bằng Reset this PC (không cần ISO)" />
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="2. File ISO (C1-C3)" Padding="10" Margin="0,0,0,8">
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,6">
+                        <Button DockPanel.Dock="Right" Content="Chọn file..." Width="100" Height="28" Margin="8,0,0,0" Click="IsoBrowse_Click" />
+                        <TextBox x:Name="IsoBox" Height="28" VerticalContentAlignment="Center" />
+                    </DockPanel>
+                    <Button x:Name="IsoButton" Content="Kiểm tra ISO" Width="140" Height="30" HorizontalAlignment="Left" Click="IsoButton_Click" />
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="3. Bản sao lưu (nằm NGOÀI ổ Windows)" Padding="10" Margin="0,0,0,8">
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,6">
+                        <Button DockPanel.Dock="Right" Content="Chọn..." Width="80" Height="28" Margin="8,0,0,0" Click="BackupBrowse_Click" />
+                        <TextBox x:Name="BackupBox" Height="28" VerticalContentAlignment="Center" />
+                    </DockPanel>
+                    <TextBlock Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,6" Text="Chọn thư mục theo ngày giờ do tab Sao lưu tạo (bên trong có userdata và apps)." />
+                    <WrapPanel>
+                        <Button x:Name="KitButton" Content="Chép bộ khôi phục (PCTool.exe)" Width="220" Height="30" Margin="0,0,10,0" Click="KitButton_Click" />
+                    </WrapPanel>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="4. Kiểm tra điều kiện và mở công cụ" Padding="10" Margin="0,0,0,8">
+                <StackPanel>
+                    <Button x:Name="CheckButton" Content="Kiểm tra điều kiện" Width="170" Height="32" HorizontalAlignment="Left" Margin="0,0,0,8" Click="CheckButton_Click" />
+                    <CheckBox x:Name="BackupAck" Content="Tôi đã mở bản sao lưu và kiểm tra thấy đủ file của mình" Margin="0,0,0,4" />
+                    <CheckBox x:Name="BitLockerAck" Content="Tôi đã lưu khóa khôi phục BitLocker (nếu máy có bật)" Margin="0,0,0,4" />
+                    <DockPanel Margin="0,0,0,8">
+                        <TextBlock Text="Chỉ C3, gõ đúng XOA SACH: " VerticalAlignment="Center" Margin="0,0,6,0" />
+                        <TextBox x:Name="PhraseBox" Width="160" Height="26" HorizontalAlignment="Left" />
+                    </DockPanel>
+                    <Button x:Name="LaunchButton" Content="Mở công cụ của Microsoft" Width="220" Height="34" HorizontalAlignment="Left" Click="LaunchButton_Click" />
+                </StackPanel>
+            </GroupBox>
+
+            <CheckBox x:Name="DryRunBox" Content="Chạy thử (không mở gì, không thay đổi gì)" IsChecked="True" Margin="0,0,0,8" />
+            <GroupBox Header="Kết quả" Height="300">
+                <TextBox x:Name="ResultBox" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" BorderThickness="0" FontSize="13" />
+            </GroupBox>
+            <ProgressBar x:Name="Progress" Height="8" Minimum="0" Maximum="100" Margin="0,10,0,0" />
+            <TextBlock x:Name="StatusText" Margin="0,6,0,0" TextWrapping="Wrap" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

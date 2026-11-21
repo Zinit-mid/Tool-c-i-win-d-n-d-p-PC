@@ -52,6 +52,9 @@
             <TabItem Header="Sao lưu / Khôi phục app" Padding="12,8">
                 <views:BackupRestoreView />
             </TabItem>
+            <TabItem Header="Cài lại Win trực tiếp" Padding="12,8">
+                <views:DirectReinstallView />
+            </TabItem>
             <TabItem Header="Khôi phục sau cài Win" Padding="12,8">
                 <views:RestoreView />
             </TabItem>
