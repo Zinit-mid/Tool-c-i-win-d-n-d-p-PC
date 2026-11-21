@@ -17,7 +17,7 @@ public partial class RestoreView : UserControl
 
     private void SetBusy(bool busy)
     {
-        foreach (var b in new[] { DriverButton, WifiButton, PlanReadButton, AppsButton, DataButton }) b.IsEnabled = !busy;
+        foreach (var b in new[] { DriverButton, WifiButton, PlanReadButton, AppsButton, DataButton, ZaloButton }) b.IsEnabled = !busy;
         Progress.IsIndeterminate = busy;
     }
 
@@ -32,7 +32,7 @@ public partial class RestoreView : UserControl
         }
         var d = new Microsoft.Win32.OpenFolderDialog { Title = "Chọn thư mục" };
         if (d.ShowDialog() != true) return;
-        (tag switch { "Driver" => DriverBox, "Wifi" => WifiBox, _ => DataBox }).Text = d.FolderName;
+        (tag switch { "Driver" => DriverBox, "Wifi" => WifiBox, "Zalo" => ZaloBox, _ => DataBox }).Text = d.FolderName;
     }
 
     private bool Dry => DryRunBox.IsChecked == true;
@@ -142,6 +142,15 @@ public partial class RestoreView : UserControl
         }
         StatusText.Text = $"Xong: {ok}/{entries.Count} app thành công. Xem chi tiết ở Kết quả.";
     }, "Khôi phục app");
+
+    private async void ZaloButton_Click(object sender, RoutedEventArgs e) => await Guard(async () =>
+    {
+        var fix = new ZaloRestoreFix(ZaloBox.Text.Trim());
+        if (!Confirm(fix)) { StatusText.Text = "Đã hủy."; return; }
+        var res = await Run(fix);
+        StatusText.Text = Describe(res);
+        ResultBox.Text = res.Message;
+    }, "Khôi phục Zalo");
 
     private async void DataButton_Click(object sender, RoutedEventArgs e) => await Guard(async () =>
     {

@@ -51,7 +51,7 @@ public sealed class RestoreTests
     public async Task Driver_Exit_Codes(int code, FixOutcome expected)
     {
         var p = new Proc { Exit = code };
-        var res = await Exec().RunAsync(new DriverRestoreFix(@"D:\B\drv", p, _ => 2), Real(), null, CancellationToken.None);
+        var res = await Exec().RunAsync(new DriverRestoreFix(@"D:\B\drv", p, _ => 2, Fake("a.inf"), _ => new[] { "a.inf" }), Real(), null, CancellationToken.None);
         Assert.Equal(expected, res.Outcome);
         if (code == 3010) Assert.Contains("KHỞI ĐỘNG LẠI", res.Message);
         Assert.Equal("pnputil.exe", Assert.Single(p.Calls).File);

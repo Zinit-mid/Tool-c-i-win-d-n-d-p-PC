@@ -61,6 +61,17 @@
                 </StackPanel>
             </GroupBox>
 
+            <GroupBox Header="5. Zalo" Padding="10" Margin="0,0,0,8">
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,6">
+                        <Button DockPanel.Dock="Right" Content="Chọn..." Width="80" Height="28" Margin="8,0,0,0" Tag="Zalo" Click="Browse_Click" />
+                        <TextBox x:Name="ZaloBox" Height="28" VerticalContentAlignment="Center" />
+                    </DockPanel>
+                    <TextBlock Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,6" Text="Chọn thư mục Zalo trong bản sao lưu. Cài Zalo, đăng nhập một lần, rồi đóng hẳn Zalo trước. File đã có trên máy KHÔNG bị ghi đè. Chưa thử trên máy thật." />
+                    <Button x:Name="ZaloButton" Content="Khôi phục Zalo" Width="160" Height="32" HorizontalAlignment="Left" Click="ZaloButton_Click" />
+                </StackPanel>
+            </GroupBox>
+
             <CheckBox x:Name="DryRunBox" Content="Chạy thử (không thay đổi gì)" IsChecked="True" Margin="0,0,0,8" />
             <GroupBox Header="Kết quả" Height="220">
                 <TextBox x:Name="ResultBox" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" BorderThickness="0" FontSize="13" />

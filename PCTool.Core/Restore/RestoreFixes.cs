@@ -25,14 +25,39 @@ public sealed class DriverRestoreFix : IFix
 {
     private readonly IProcessRunner _runner;
     private readonly Func<string, int> _countInf;
+    private readonly ScriptRunner _run;
+    private readonly Func<string, IReadOnlyList<string>> _listInf;
+    private IReadOnlyList<string> _expected = Array.Empty<string>();
     private bool _ok;
 
-    public DriverRestoreFix(string folder, IProcessRunner? runner = null, Func<string, int>? countInf = null)
+    public DriverRestoreFix(string folder, IProcessRunner? runner = null, Func<string, int>? countInf = null,
+        ScriptRunner? run = null, Func<string, IReadOnlyList<string>>? listInf = null)
     {
         if (!BackupPath.IsValid(folder, out var err)) throw new ArgumentException(err, nameof(folder));
         Folder = folder.TrimEnd('\\');
         _runner = runner ?? new ProcessRunner();
         _countInf = countInf ?? DefaultCount;
+        _run = run ?? ((s, ct) => PowerShellRunner.RunAsync(s, ct, 120));
+        _listInf = listInf ?? DefaultList;
+    }
+
+    /// <summary>Tên driver (.inf) mà bản sao lưu có nhưng máy chưa thấy sau khi nạp (điền khi kiểm tra lại).</summary>
+    public IReadOnlyList<string> Missing { get; private set; } = Array.Empty<string>();
+
+    /// <summary>Script chỉ đọc: liệt kê tên file .inf gốc của mọi driver trong kho driver của Windows (không phụ thuộc ngôn ngữ).</summary>
+    public static string BuildListScript() => """
+$ErrorActionPreference = 'Stop'
+Get-WindowsDriver -Online -All | ForEach-Object { Split-Path -Leaf $_.OriginalFileName } | Sort-Object -Unique
+""";
+
+    private static IReadOnlyList<string> DefaultList(string dir)
+    {
+        try
+        {
+            return Directory.EnumerateFiles(dir, "*.inf", SearchOption.AllDirectories)
+                .Select(f => Path.GetFileName(f)!).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { return Array.Empty<string>(); }
     }
 
     public string Folder { get; }
@@ -60,6 +85,8 @@ public sealed class DriverRestoreFix : IFix
         if (n < 0) return FixResult.Failed("Không đọc được thư mục driver: " + Folder);
         if (n == 0) return FixResult.Failed("Không thấy file driver (.inf) nào trong " + Folder);
 
+        _expected = _listInf(Folder);
+        Missing = Array.Empty<string>();
         progress.Report($"Đang nạp {n} file driver (có thể mất vài phút)...");
         ProcessResult r;
         try { r = await _runner.RunAsync("pnputil.exe", Args(), RestoreLimits.PnpTimeoutSeconds, ct); }
@@ -76,8 +103,19 @@ public sealed class DriverRestoreFix : IFix
         return FixResult.Failed($"pnputil báo lỗi (mã {r.ExitCode}). " + (tail.Length <= 300 ? tail : tail[^300..]));
     }
 
-    // Chưa kiểm tra được từng driver đã vào máy; chỉ xác nhận pnputil báo thành công.
-    public Task<bool> VerifyAsync(CancellationToken ct) => Task.FromResult(_ok);
+    /// <summary>Đối chiếu từng file .inf của bản sao lưu với kho driver Windows. Thiếu driver nào thì ghi vào Missing và báo chưa đạt.</summary>
+    public async Task<bool> VerifyAsync(CancellationToken ct)
+    {
+        if (!_ok) return false;
+        var r = await _run(BuildListScript(), ct);
+        if (r.ExitCode != 0) throw new InvalidOperationException("Không đọc được danh sách driver của Windows để kiểm tra lại.");
+        var present = r.Output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        Missing = _expected.Where(n => !present.Contains(n)).ToList();
+        if (Missing.Count > 0)
+            Logger.Warn($"Driver chưa thấy trong máy sau khi nạp ({Missing.Count}/{_expected.Count}): " + string.Join(", ", Missing.Take(30)));
+        return Missing.Count == 0;
+    }
 }
 
 public static class WifiProfileName
@@ -319,5 +357,83 @@ foreach ($n in {{UserDataShared.NamesArray(_folders)}}) {
     }
 
     // Việc đếm lại số file đã nằm trong script (sau khi chép); không chạy thêm lần nữa.
+    public Task<bool> VerifyAsync(CancellationToken ct) => Task.FromResult(_ok);
+}
+
+
+/// <summary>
+/// Khôi phục dữ liệu Zalo từ bản sao lưu của ZaloBackupFix. KHÔNG ghi đè, KHÔNG xóa: chỉ chép file chưa có trên máy
+/// (robocopy /XC /XN /XO). Cần cài Zalo, đăng nhập một lần rồi đóng hẳn trước. Đường dẫn dữ liệu Zalo chưa kiểm chứng trên máy thật.
+/// </summary>
+public sealed class ZaloRestoreFix : IFix
+{
+    private readonly ScriptRunner _run;
+    private bool _ok;
+
+    public ZaloRestoreFix(string folder, ScriptRunner? run = null)
+    {
+        if (!BackupPath.IsValid(folder, out var err)) throw new ArgumentException(err, nameof(folder));
+        Folder = folder.TrimEnd('\\');
+        _run = run ?? ((s, ct) => PowerShellRunner.RunAsync(s, ct, 7200));
+    }
+
+    public string Folder { get; }
+    public string Title => "Khôi phục dữ liệu Zalo";
+    public IReadOnlyList<string> Actions => new[]
+    {
+        $"Chép các thư mục dữ liệu tài khoản (tên toàn số) từ {Folder} vào %LOCALAPPDATA%\\ZaloPC trên máy này",
+        "Chỉ chép file CHƯA CÓ trên máy; file đã có được giữ nguyên, không ghi đè, không xóa gì",
+        "Cần cài Zalo, đăng nhập một lần rồi ĐÓNG HẲN Zalo (kể cả biểu tượng khay hệ thống) trước; app không tự tắt Zalo",
+        "Dữ liệu chứa TIN NHẮN và FILE riêng tư của bạn"
+    };
+    public bool RequiresRestorePoint => false;
+    public bool IsUndoable => false;
+
+    public string BuildScript() => $$"""
+$ErrorActionPreference = 'Stop'
+if (Get-Process -Name 'Zalo' -ErrorAction SilentlyContinue) { Write-Output 'RUNNING'; exit 0 }
+$src = '{{Folder}}'
+$accounts = @(Get-ChildItem -LiteralPath $src -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '^[0-9]{6,}$' })
+if ($accounts.Count -eq 0) { Write-Output 'NOSRC'; exit 0 }
+$root = $null
+foreach ($n in 'ZaloPC','Zalo PC') {
+  $c = Join-Path $env:LOCALAPPDATA $n
+  if (Test-Path -LiteralPath $c -PathType Container) { $root = $c; break }
+}
+if (-not $root) { Write-Output 'NODEST'; exit 0 }
+$res = @()
+foreach ($a in $accounts) {
+  $d = Join-Path $root $a.Name
+  New-Item -ItemType Directory -Force -Path $d | Out-Null
+  $srcFiles = (Get-ChildItem -LiteralPath $a.FullName -File -Recurse -Force | Measure-Object).Count
+  & robocopy $a.FullName $d /E /XC /XN /XO /COPY:DAT /DCOPY:DAT /XJ /R:1 /W:1 /NP /NFL /NDL /NJH /NJS /MT:8 | Out-Null
+  $code = $LASTEXITCODE
+  $destFiles = (Get-ChildItem -LiteralPath $d -File -Recurse -Force | Measure-Object).Count
+  $res += [ordered]@{ name = $a.Name; srcFiles = [long]$srcFiles; destFiles = [long]$destFiles; exit = [int]$code }
+}
+[ordered]@{ folders = @($res) } | ConvertTo-Json -Compress -Depth 4
+""";
+
+    public async Task<FixResult> ExecuteAsync(IProgress<string> progress, CancellationToken ct)
+    {
+        progress.Report("Đang chép dữ liệu Zalo về máy (không ghi đè file đã có)...");
+        var r = await _run(BuildScript(), ct);
+        if (r.ExitCode != 0)
+            return FixResult.Failed(string.IsNullOrWhiteSpace(r.Error) ? "Không khôi phục được dữ liệu Zalo." : r.Error.Trim());
+        var last = r.Output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).LastOrDefault() ?? "";
+        switch (last)
+        {
+            case "RUNNING": return FixResult.Failed("Zalo đang chạy. Hãy đóng Zalo hoàn toàn (kể cả biểu tượng ở khay hệ thống, chuột phải → Thoát) rồi thử lại.");
+            case "NOSRC": return FixResult.Failed("Không thấy thư mục dữ liệu tài khoản Zalo (tên toàn số) trong " + Folder + ". Hãy chọn thư mục \"Zalo\" bên trong bản sao lưu theo ngày giờ.");
+            case "NODEST": return FixResult.Failed("Máy này chưa có thư mục dữ liệu Zalo. Hãy cài Zalo, đăng nhập một lần, đóng hẳn Zalo rồi thử lại.");
+        }
+        var problems = RestoreVerifier.Problems(r.Output);
+        if (problems.Count > 0)
+            return FixResult.Failed("Khôi phục Zalo chưa đạt: " + string.Join(" ", problems) + " Bản sao lưu vẫn còn nguyên.");
+        _ok = true;
+        return FixResult.Succeeded("Đã chép dữ liệu Zalo về máy. File đã có sẵn được giữ nguyên. Mở Zalo xem tin nhắn; nếu không thấy, hãy dùng chức năng Xuất/Nhập dữ liệu có sẵn trong Zalo.");
+    }
+
+    // Việc đếm file nguồn/đích nằm trong script, không chạy lại.
     public Task<bool> VerifyAsync(CancellationToken ct) => Task.FromResult(_ok);
 }
