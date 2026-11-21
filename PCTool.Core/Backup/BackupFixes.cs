@@ -27,8 +27,11 @@ public abstract class BackupFix : IFix
     public abstract string BuildScript();
     protected virtual string DoneNote => "";
 
+    /// <summary>Kết quả đặc biệt do script báo (ví dụ ứng dụng đang chạy). null nghĩa là xử lý như bình thường.</summary>
+    protected virtual FixResult? Special(string output) => null;
+
     public string BuildVerifyScript() =>
-        $"(Get-ChildItem -LiteralPath '{Folder}' -Filter '{Pattern}' -Recurse -ErrorAction SilentlyContinue | Measure-Object).Count";
+        $"(Get-ChildItem -LiteralPath '{Folder}' -File -Filter '{Pattern}' -Recurse -ErrorAction SilentlyContinue | Measure-Object).Count";
 
     protected static int LastInt(string output)
     {
@@ -42,6 +45,9 @@ public abstract class BackupFix : IFix
         var r = await _run(BuildScript(), ct);
         if (r.ExitCode != 0)
             return FixResult.Failed(string.IsNullOrWhiteSpace(r.Error) ? FailMessage : r.Error.Trim());
+
+        var special = Special(r.Output);
+        if (special != null) return special;
 
         int n = LastInt(r.Output);
         if (n < 0) return FixResult.Failed("Không đọc được kết quả sao lưu, hãy kiểm tra thư mục: " + Folder);
@@ -104,5 +110,55 @@ New-Item -ItemType Directory -Force -Path $d | Out-Null
 netsh wlan export profile key=clear folder="$d" | Out-Null
 if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('netsh wlan thất bại'); exit 1 }
 (Get-ChildItem -LiteralPath $d -Filter '*.xml' | Measure-Object).Count
+""";
+}
+
+/// <summary>
+/// Sao lưu dữ liệu Zalo PC (các thư mục tài khoản dạng số trong %LOCALAPPDATA%\ZaloPC) ra thư mục đích. Chỉ sao chép, không xóa gì.
+/// Đường dẫn dữ liệu Zalo chưa kiểm chứng trên máy thật (nguồn hướng dẫn nói %LOCALAPPDATA%\ZaloPC, tên thư mục có thể là "Zalo PC").
+/// </summary>
+public sealed class ZaloBackupFix : BackupFix
+{
+    public ZaloBackupFix(string folder, ScriptRunner? run = null) : base(folder, run) { }
+
+    public override string Title => "Sao lưu dữ liệu Zalo";
+    public override IReadOnlyList<string> Actions => new[]
+    {
+        $"Tạo thư mục mới: {Folder}",
+        "Sao chép (không xóa, không đổi) các thư mục dữ liệu tài khoản Zalo trên máy này vào thư mục đó",
+        "Zalo phải được ĐÓNG HẲN trước (kể cả biểu tượng ở khay hệ thống); app không tự tắt Zalo",
+        "Bản sao chứa TIN NHẮN và FILE riêng tư của bạn. Có thể nặng vài GB. Chỉ lưu ở nơi an toàn"
+    };
+    protected override string Pattern => "*";
+    protected override string Noun => "file dữ liệu Zalo";
+    protected override string NothingMessage => "Không có file nào được sao chép.";
+    protected override string FailMessage => "Không sao lưu được Zalo. Kiểm tra ổ đích còn trống và Zalo đã đóng hẳn.";
+    protected override string DoneNote =>
+        " Để khôi phục: đóng Zalo, chép các thư mục số này trở lại %LOCALAPPDATA%\\ZaloPC. Nếu không chắc, hãy dùng chức năng Xuất dữ liệu có sẵn trong Zalo.";
+
+    protected override FixResult? Special(string output)
+    {
+        var last = output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).LastOrDefault();
+        return last switch
+        {
+            "RUNNING" => FixResult.Failed("Zalo đang chạy. Hãy đóng Zalo hoàn toàn (kể cả biểu tượng ở khay hệ thống, chuột phải → Thoát) rồi thử lại."),
+            "NODATA" => FixResult.Failed("Không tìm thấy thư mục dữ liệu tài khoản Zalo trên máy này (có thể Zalo lưu ở nơi khác). Hãy dùng chức năng Xuất dữ liệu có sẵn trong Zalo: Cài đặt → Lưu trữ → Xuất dữ liệu."),
+            _ => null
+        };
+    }
+
+    public override string BuildScript() => $$"""
+$ErrorActionPreference = 'Stop'
+if (Get-Process -Name 'Zalo' -ErrorAction SilentlyContinue) { Write-Output 'RUNNING'; exit 0 }
+$d = '{{Folder}}'
+$src = @()
+foreach ($n in 'ZaloPC','Zalo PC') {
+  $root = Join-Path $env:LOCALAPPDATA $n
+  if (Test-Path -LiteralPath $root) { $src += @(Get-ChildItem -LiteralPath $root -Directory | Where-Object { $_.Name -match '^[0-9]{6,}$' }) }
+}
+if ($src.Count -eq 0) { Write-Output 'NODATA'; exit 0 }
+New-Item -ItemType Directory -Force -Path $d | Out-Null
+foreach ($s in $src) { Copy-Item -LiteralPath $s.FullName -Destination (Join-Path $d $s.Name) -Recurse -Force }
+(Get-ChildItem -LiteralPath $d -File -Recurse | Measure-Object).Count
 """;
 }

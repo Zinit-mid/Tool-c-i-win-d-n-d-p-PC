@@ -22,6 +22,7 @@ public partial class BackupView : UserControl
         DriverButton.IsEnabled = !busy;
         WifiButton.IsEnabled = !busy;
         BitLockerButton.IsEnabled = !busy;
+        ZaloButton.IsEnabled = !busy;
         BrowseButton.IsEnabled = !busy;
         DryRunBox.IsEnabled = !busy;
         CancelButton.IsEnabled = busy;
@@ -40,6 +41,8 @@ public partial class BackupView : UserControl
     private async void DriverButton_Click(object sender, RoutedEventArgs e) => await BackupAsync(root => new DriverBackupFix(BackupPath.Combine(root, DateTime.Now, "Drivers")));
 
     private async void WifiButton_Click(object sender, RoutedEventArgs e) => await BackupAsync(root => new WifiBackupFix(BackupPath.Combine(root, DateTime.Now, "WiFi")));
+
+    private async void ZaloButton_Click(object sender, RoutedEventArgs e) => await BackupAsync(root => new ZaloBackupFix(BackupPath.Combine(root, DateTime.Now, "Zalo")));
 
     private async Task BackupAsync(Func<string, IFix> make)
     {

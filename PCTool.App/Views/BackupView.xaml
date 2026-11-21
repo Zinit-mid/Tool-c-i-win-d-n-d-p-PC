@@ -35,6 +35,8 @@
                     Click="DriverButton_Click" />
             <Button x:Name="WifiButton" Content="Sao lưu Wi-Fi" Width="130" Height="32" Margin="0,0,10,6"
                     Click="WifiButton_Click" />
+            <Button x:Name="ZaloButton" Content="Sao lưu Zalo" Width="130" Height="32" Margin="0,0,10,6"
+                    Click="ZaloButton_Click" />
             <Button x:Name="BitLockerButton" Content="Xem BitLocker" Width="130" Height="32" Margin="0,0,10,6"
                     Click="BitLockerButton_Click" />
             <Button x:Name="CancelButton" Content="Dừng" Width="80" Height="32" Margin="0,0,10,6"

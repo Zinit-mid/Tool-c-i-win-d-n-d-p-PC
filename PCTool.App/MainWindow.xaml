@@ -60,6 +60,9 @@
             <TabItem Header="Chẩn đoán máy in" Padding="12,8">
                 <views:PrinterView />
             </TabItem>
+            <TabItem Header="Sửa lỗi Word / Excel" Padding="12,8">
+                <views:OfficeFixView />
+            </TabItem>
             <TabItem Header="Windows Update" Padding="12,8">
                 <views:WindowsUpdateView />
             </TabItem>
