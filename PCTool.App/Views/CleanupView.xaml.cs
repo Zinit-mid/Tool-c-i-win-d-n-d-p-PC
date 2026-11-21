@@ -13,6 +13,7 @@ public partial class CleanupView : UserControl
     public CleanupView()
     {
         InitializeComponent();
+        DryRunBox.IsChecked = SettingsService.Default.DryRunDefault;
         ItemsGrid.ItemsSource = _items;
     }
 
@@ -86,6 +87,12 @@ public partial class CleanupView : UserControl
 
     private async void CleanButton_Click(object sender, RoutedEventArgs e)
     {
+        if (SettingsService.Default.SafeMode)
+        {
+            StatusText.Text = "Đã khóa: " + SettingsService.SafeModeMessage;
+            return;
+        }
+
         var chosen = _items.Where(i => i.Selected).ToList();
         if (chosen.Count == 0)
         {
@@ -112,7 +119,7 @@ public partial class CleanupView : UserControl
 
         // Mọi thao tác dọn đi qua khung chung: chạy thử / chế độ an toàn / nhật ký / kiểm tra lại.
         var executor = new FixExecutor(new RestorePointService());
-        var options = new FixOptions { DryRun = dry, CreateRestorePoint = false };
+        var options = SettingsService.Default.BuildOptions(dry);
         var progress = new Progress<string>(m => StatusText.Text = m);
         int ok = 0, failed = 0;
         string? lastProblem = null;

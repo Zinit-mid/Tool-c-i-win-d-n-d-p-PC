@@ -16,6 +16,7 @@ public partial class DefenderView : UserControl
     public DefenderView()
     {
         InitializeComponent();
+        DryRunBox.IsChecked = SettingsService.Default.DryRunDefault;
         _tick.Tick += (_, _) => UpdateCountdown();
         Loaded += async (_, _) => await RefreshAsync();
     }
@@ -80,6 +81,12 @@ public partial class DefenderView : UserControl
 
     private async Task ConfirmAndRunAsync(IFix fix)
     {
+        if (SettingsService.Default.SafeMode)
+        {
+            ResultText.Text = "Đã khóa: " + SettingsService.SafeModeMessage;
+            return;
+        }
+
         bool dryRun = DryRunBox.IsChecked == true;
         var text = "Sẽ làm:\n• " + string.Join("\n• ", fix.Actions) +
                    (dryRun ? "\n\n(Chế độ chạy thử: chỉ mô phỏng, máy không bị thay đổi.)" : "") +
@@ -92,7 +99,7 @@ public partial class DefenderView : UserControl
         try
         {
             var progress = new Progress<string>(m => ResultText.Text = m);
-            var result = await _executor.RunAsync(fix, new FixOptions { DryRun = dryRun, CreateRestorePoint = false },
+            var result = await _executor.RunAsync(fix, SettingsService.Default.BuildOptions(dryRun),
                 progress, CancellationToken.None);
             ResultText.Text = Describe(result);
         }

@@ -14,6 +14,7 @@ public partial class PrinterView : UserControl
     public PrinterView()
     {
         InitializeComponent();
+        DryRunBox.IsChecked = SettingsService.Default.DryRunDefault;
     }
 
     private void SetBusy(bool busy)
@@ -77,6 +78,12 @@ public partial class PrinterView : UserControl
     /// <summary>Mọi cách sửa đi qua khung chung: hỏi xác nhận → chạy thử/chạy thật → kiểm tra lại → nhật ký.</summary>
     private async Task ConfirmAndRunAsync(IFix fix)
     {
+        if (SettingsService.Default.SafeMode)
+        {
+            StatusText.Text = "Đã khóa: " + SettingsService.SafeModeMessage;
+            return;
+        }
+
         bool dryRun = DryRunBox.IsChecked == true;
         var text = "Sẽ làm:\n• " + string.Join("\n• ", fix.Actions) +
                    (dryRun ? "\n\n(Chế độ chạy thử: chỉ mô phỏng, máy không bị thay đổi.)" : "") +
@@ -91,7 +98,7 @@ public partial class PrinterView : UserControl
         {
             var executor = new FixExecutor(new RestorePointService());
             var progress = new Progress<string>(m => StatusText.Text = m);
-            var result = await executor.RunAsync(fix, new FixOptions { DryRun = dryRun, CreateRestorePoint = false },
+            var result = await executor.RunAsync(fix, SettingsService.Default.BuildOptions(dryRun),
                 progress, _cts.Token);
 
             StatusText.Text = result.Outcome switch

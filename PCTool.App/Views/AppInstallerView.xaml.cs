@@ -51,6 +51,7 @@ public partial class AppInstallerView : UserControl
     public AppInstallerView()
     {
         InitializeComponent();
+        DryRunBox.IsChecked = SettingsService.Default.DryRunDefault;
         AppsGrid.ItemsSource = _rows;
         Reload();
     }
@@ -91,6 +92,12 @@ public partial class AppInstallerView : UserControl
 
     private async void InstallButton_Click(object sender, RoutedEventArgs e)
     {
+        if (SettingsService.Default.SafeMode)
+        {
+            StatusText.Text = "Đã khóa: " + SettingsService.SafeModeMessage;
+            return;
+        }
+
         var chosen = _rows.Where(r => r.Selected).ToList();
         if (chosen.Count == 0)
         {
@@ -113,7 +120,7 @@ public partial class AppInstallerView : UserControl
         var runner = new ProcessRunner();
         var desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
         var executor = new FixExecutor(new RestorePointService());
-        var options = new FixOptions { DryRun = dryRun, CreateRestorePoint = false };
+        var options = SettingsService.Default.BuildOptions(dryRun);
         int ok = 0, bad = 0;
 
         try

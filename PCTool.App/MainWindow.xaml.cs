@@ -21,9 +21,36 @@ public partial class MainWindow : Window
 
         Logger.Info("PCTool đã khởi động. File log: " + Logger.LogFile);
 
+        var settings = SettingsService.Default;
+        if (settings.Warning != null) Logger.Warn(settings.Warning);
+        SafeModeBox.IsChecked = settings.SafeMode;
+        SafeBanner.Visibility = settings.SafeMode ? Visibility.Visible : Visibility.Collapsed;
+
         UpdateService.CleanupLeftovers();
         UpdateText.Text = $"Phiên bản {UpdateService.CurrentVersion}";
         Loaded += async (_, _) => await CheckForUpdateAsync(silent: true);
+    }
+
+    private void SafeModeBox_Click(object sender, RoutedEventArgs e)
+    {
+        var settings = SettingsService.Default;
+        bool want = SafeModeBox.IsChecked == true;
+
+        // Tắt Chế độ an toàn luôn cần xác nhận (tránh bấm nhầm trên máy công ty).
+        if (!want && MessageBox.Show(
+                "Tắt Chế độ an toàn? Sau đó PCTool có thể thay đổi máy (dọn file, cài app, tắt Defender...).",
+                "Tắt Chế độ an toàn", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes)
+        {
+            SafeModeBox.IsChecked = true;
+            return;
+        }
+
+        bool saved = settings.SetSafeMode(want);
+        SafeBanner.Visibility = want ? Visibility.Visible : Visibility.Collapsed;
+        Logger.Info(want ? "Đã BẬT Chế độ an toàn." : "Đã TẮT Chế độ an toàn.");
+        if (!saved)
+            MessageBox.Show("Không lưu được cài đặt nên lần mở sau có thể trở lại như cũ. Lần mở này vẫn có hiệu lực.",
+                "PCTool", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private async void CheckUpdateButton_Click(object sender, RoutedEventArgs e) =>

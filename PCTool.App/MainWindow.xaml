@@ -7,11 +7,19 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="150" />
         </Grid.RowDefinitions>
 
-        <DockPanel Grid.Row="0" Margin="10,6,10,0" LastChildFill="True">
+        <Border x:Name="SafeBanner" Grid.Row="0" Background="#FFFFF4CE" Padding="10,6" Visibility="Collapsed">
+            <TextBlock TextWrapping="Wrap" FontWeight="SemiBold"
+                       Text="Chế độ an toàn đang BẬT: mọi thao tác thay đổi máy đều bị khóa. Bạn vẫn quét và xem thông số được." />
+        </Border>
+
+        <DockPanel Grid.Row="1" Margin="10,6,10,0" LastChildFill="True">
+            <CheckBox x:Name="SafeModeBox" DockPanel.Dock="Left" Content="Chế độ an toàn (máy công ty: chỉ xem, không sửa)"
+                      VerticalAlignment="Center" Margin="0,0,16,0" Click="SafeModeBox_Click" />
             <Button x:Name="CheckUpdateButton" DockPanel.Dock="Right" Content="Kiểm tra cập nhật" Padding="10,3"
                     Click="CheckUpdateButton_Click" />
             <Button x:Name="InstallUpdateButton" DockPanel.Dock="Right" Content="Cập nhật ngay" Padding="10,3"
@@ -21,7 +29,7 @@
             <TextBlock x:Name="UpdateText" Foreground="Gray" VerticalAlignment="Center" />
         </DockPanel>
 
-        <TabControl Grid.Row="1" TabStripPlacement="Left" Margin="6">
+        <TabControl Grid.Row="2" TabStripPlacement="Left" Margin="6">
             <TabItem Header="Dọn dẹp rác" Padding="12,8">
                 <views:CleanupView />
             </TabItem>
@@ -55,7 +63,7 @@
             </TabItem>
         </TabControl>
 
-        <GroupBox Grid.Row="2" Header="Nhật ký thao tác" Margin="6,0,6,6">
+        <GroupBox Grid.Row="3" Header="Nhật ký thao tác" Margin="6,0,6,6">
             <TextBox x:Name="LogBox" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
                      FontFamily="Consolas" FontSize="12" TextWrapping="NoWrap"
                      HorizontalScrollBarVisibility="Auto" />
