@@ -16,7 +16,8 @@ public sealed class PrinterRow
     public string Connection { get; set; } = "";
 }
 
-public sealed class Finding
+/// <summary>Một dòng trong báo cáo chẩn đoán máy in (có cả mức "Ok" và tên máy in, dùng cho bảng và báo cáo chữ). Khác với <see cref="Framework.Finding"/> (vấn đề của khung chung, do PrinterFindingMapper tạo ra).</summary>
+public sealed class PrinterFinding
 {
     /// <summary>Error / Warn / Info / Ok (dùng để tô màu dòng).</summary>
     public string Level { get; init; } = "Info";
@@ -46,7 +47,7 @@ public sealed class PrinterReport
 {
     public string SpoolerText { get; set; } = "";
     public List<PrinterRow> Printers { get; } = new();
-    public List<Finding> Findings { get; } = new();
+    public List<PrinterFinding> Findings { get; } = new();
     public bool SpoolerRunning { get; set; }
     public bool HasStuckJobs { get; set; }
 
@@ -129,7 +130,7 @@ public static class PrinterDiagnostics
 
         if (!report.SpoolerRunning)
         {
-            report.Findings.Add(new Finding
+            report.Findings.Add(new PrinterFinding
             {
                 Level = "Error",
                 Code = FindingCodes.SpoolerStopped,
@@ -230,7 +231,7 @@ public static class PrinterDiagnostics
 
         if (realPrinters == 0 && report.SpoolerRunning)
         {
-            report.Findings.Add(new Finding
+            report.Findings.Add(new PrinterFinding
             {
                 Level = "Warn",
                 Problem = report.Printers.Count == 0
@@ -263,7 +264,7 @@ public static class PrinterDiagnostics
 
         if (report.Findings.Count == 0)
         {
-            report.Findings.Add(new Finding
+            report.Findings.Add(new PrinterFinding
             {
                 Level = "Ok",
                 Problem = "Không phát hiện vấn đề (spooler chạy, driver có, kết nối được, hàng đợi trống).",
@@ -448,7 +449,7 @@ public static class PrinterDiagnostics
     // ------------------------------------------------------------------ tiện ích JSON
 
     private static void Add(PrinterReport r, string level, string printer, string problem, string advice, string code = "") =>
-        r.Findings.Add(new Finding { Level = level, Printer = printer, Problem = problem, Advice = advice, Code = code });
+        r.Findings.Add(new PrinterFinding { Level = level, Printer = printer, Problem = problem, Advice = advice, Code = code });
 
     private static string Trunc(string s, int max = 50) => s.Length <= max ? s : s[..max] + "…";
 
