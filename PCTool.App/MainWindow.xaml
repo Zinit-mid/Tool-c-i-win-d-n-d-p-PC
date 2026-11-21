@@ -42,6 +42,9 @@
             <TabItem Header="Thông số phần cứng" Padding="12,8">
                 <views:HardwareView />
             </TabItem>
+            <TabItem Header="Sao lưu Driver / Wi-Fi" Padding="12,8">
+                <views:BackupView />
+            </TabItem>
             <TabItem Header="Dọn thư mục thông minh" Padding="12,8">
                 <views:PlaceholderView Title="Dọn thư mục thông minh"
                     Detail="Tìm file/thư mục trùng, gom thư mục giống nhau, dọn bản sao lưu thừa, sắp xếp Downloads/Desktop. (Sắp làm)" />
