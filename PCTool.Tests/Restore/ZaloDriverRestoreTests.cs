@@ -1,3 +1,4 @@
+using PCTool.Core.AppInstaller;
 using PCTool.Core.Framework;
 using PCTool.Core.Restore;
 using PCTool.Core.Windows;
