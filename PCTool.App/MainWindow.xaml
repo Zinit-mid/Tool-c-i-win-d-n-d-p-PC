@@ -58,8 +58,7 @@
                 <views:RestoreView />
             </TabItem>
             <TabItem Header="Gỡ phần mềm cứng đầu" Padding="12,8">
-                <views:PlaceholderView Title="Gỡ phần mềm cứng đầu"
-                    Detail="Gỡ theo từng mức: gỡ chuẩn, dừng service/driver, Safe Mode, dọn tàn dư. (Sắp làm)" />
+                <views:UninstallView />
             </TabItem>
             <TabItem Header="Chẩn đoán máy in" Padding="12,8">
                 <views:PrinterView />
