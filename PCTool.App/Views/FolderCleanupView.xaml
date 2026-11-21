@@ -1,0 +1,42 @@
+<UserControl x:Class="PCTool.Views.FolderCleanupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock Text="Dọn thư mục thông minh" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Foreground="Gray" Margin="0,4,0,0" TextWrapping="Wrap"
+                       Text="Chọn một thư mục (ví dụ Downloads hoặc Desktop). PCTool tìm file trùng nội dung và gợi ý sắp xếp theo loại. App KHÔNG xóa file nào: file trùng được chuyển sang một thư mục riêng bắt đầu bằng _PCTool_ và có file vi-tri-cu.csv để bạn kéo lại." />
+        </StackPanel>
+
+        <DockPanel Grid.Row="1" Margin="0,0,0,10">
+            <Button x:Name="BrowseButton" DockPanel.Dock="Right" Content="Chọn thư mục..." Width="120" Height="30"
+                    Margin="8,0,0,0" Click="BrowseButton_Click" />
+            <TextBox x:Name="FolderBox" Height="30" VerticalContentAlignment="Center" />
+        </DockPanel>
+
+        <TextBox x:Name="ResultBox" Grid.Row="2" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True"
+                 VerticalScrollBarVisibility="Auto" Padding="8" />
+
+        <StackPanel Grid.Row="3" Margin="0,10,0,0">
+            <ProgressBar x:Name="Progress" Height="8" Minimum="0" Maximum="100" IsIndeterminate="False" />
+            <TextBlock x:Name="StatusText" Margin="0,6,0,0" Foreground="Gray" TextWrapping="Wrap" Text="Sẵn sàng." />
+        </StackPanel>
+
+        <WrapPanel Grid.Row="4" Margin="0,10,0,0">
+            <Button x:Name="ScanDupButton" Content="Quét file trùng" Width="130" Height="32" Margin="0,0,10,6" Click="ScanDupButton_Click" />
+            <Button x:Name="MoveDupButton" Content="Chuyển file trùng" Width="140" Height="32" Margin="0,0,10,6" Click="MoveDupButton_Click" IsEnabled="False" />
+            <Button x:Name="PlanButton" Content="Xem gợi ý sắp xếp" Width="140" Height="32" Margin="0,0,10,6" Click="PlanButton_Click" />
+            <Button x:Name="OrganizeButton" Content="Sắp xếp theo loại" Width="140" Height="32" Margin="0,0,10,6" Click="OrganizeButton_Click" IsEnabled="False" />
+            <Button x:Name="CancelButton" Content="Dừng" Width="80" Height="32" Margin="0,0,10,6" Click="CancelButton_Click" IsEnabled="False" />
+            <CheckBox x:Name="DryRunBox" Content="Chạy thử (không thay đổi gì)" IsChecked="True" VerticalAlignment="Center" Margin="10,0,0,6" />
+        </WrapPanel>
+    </Grid>
+</UserControl>
