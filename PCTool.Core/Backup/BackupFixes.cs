@@ -97,12 +97,12 @@ public sealed class WifiBackupFix : BackupFix
     protected override string FailMessage => "Không đọc được danh sách Wi-Fi (máy có thể không có card Wi-Fi hoặc dịch vụ Wi-Fi đang tắt).";
     protected override string DoneNote => " Các file chứa mật khẩu Wi-Fi dạng chữ thường, hãy giữ kín.";
 
-    public override string BuildScript() => $"""
+    public override string BuildScript() => $$"""
 $ErrorActionPreference = 'Stop'
-$d = '{Folder}'
+$d = '{{Folder}}'
 New-Item -ItemType Directory -Force -Path $d | Out-Null
 netsh wlan export profile key=clear folder="$d" | Out-Null
-if ($LASTEXITCODE -ne 0) {{ [Console]::Error.WriteLine('netsh wlan thất bại'); exit 1 }}
+if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('netsh wlan thất bại'); exit 1 }
 (Get-ChildItem -LiteralPath $d -Filter '*.xml' | Measure-Object).Count
 """;
 }
