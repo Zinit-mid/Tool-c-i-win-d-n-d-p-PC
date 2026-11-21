@@ -79,7 +79,7 @@ public sealed class UsbLegacyTests
         Assert.Contains("/nt60 ($boot + ':') /force /mbr", script);
         foreach (var bad in new[] { "Clear-Disk", "Format-", "Remove-Item", "robocopy", "Set-Disk", "diskpart" })
             Assert.DoesNotContain(bad, script);
-        Assert.Throws<ArgumentException>(() => Make(new R(), Legacy).BuildBootSectorScript("E:\; calc"));
+        Assert.Throws<ArgumentException>(() => Make(new R(), Legacy).BuildBootSectorScript("E; calc"));
     }
 
     [Fact]
