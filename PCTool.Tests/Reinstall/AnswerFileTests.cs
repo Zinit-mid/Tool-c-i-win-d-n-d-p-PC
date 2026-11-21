@@ -194,7 +194,7 @@ public sealed class AnswerFileTests
         var r = new R();
         Assert.Throws<ArgumentException>(() => Make(r, new UsbWriteOptions(new AnswerFileOptions("bad"))));
         Assert.Throws<ArgumentException>(() => Make(r, new UsbWriteOptions(new AnswerFileOptions("vi-VN", null, true)), Iso(19045)));
-        Assert.Empty(r.Scripts.Where(s => s.Contains("Clear-Disk")));
+        Assert.DoesNotContain(r.Scripts, s => s.Contains("Clear-Disk"));
     }
 
     [Fact]

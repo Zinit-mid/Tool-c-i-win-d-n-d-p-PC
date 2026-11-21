@@ -71,6 +71,8 @@
                                Text="Mã xác nhận: số ổ, dấu gạch ngang, 4 ký tự cuối của serial (đã hiện ở phần Kết quả sau khi quét, ví dụ 3-1234). Phải tự gõ, app không điền sẵn." />
                     <CheckBox x:Name="AckBox" Foreground="Black" Margin="0,0,0,4" TextBlock.FontWeight="SemiBold"
                               Content="Tôi hiểu: TOÀN BỘ dữ liệu trên ổ USB đã chọn sẽ bị xóa vĩnh viễn, không khôi phục được." />
+                    <CheckBox x:Name="LegacyBox" Foreground="Black" Margin="0,4,0,2"
+                              Content="Máy BIOS cũ (Legacy/MBR): chỉ chọn khi máy KHÔNG hỗ trợ UEFI. Máy đời mới nên để trống" />
                     <CheckBox x:Name="AnswerBox" Foreground="Black" Margin="0,4,0,2"
                               Content="Tạo kèm file autounattend.xml tối thiểu (chọn sẵn ngôn ngữ của ISO, chấp nhận điều khoản, bỏ qua màn nhập key; VẪN để bạn tự chọn ổ cài)" />
                     <CheckBox x:Name="BypassBox" Foreground="#B00020" Margin="16,0,0,2"

@@ -141,13 +141,14 @@ public partial class ReinstallView : UserControl
         UsbWriteFix fix;
         try
         {
-            UsbWriteOptions? options = null;
+            AnswerFileOptions? answer = null;
             if (AnswerBox.IsChecked == true || BypassBox.IsChecked == true)
             {
                 var x64 = _lastIso.Images.Where(i => i.Arch == "x64").ToList();
                 var lang = x64.SelectMany(i => i.Languages).FirstOrDefault() ?? "";
-                options = new UsbWriteOptions(new AnswerFileOptions(lang, null, BypassBox.IsChecked == true));
+                answer = new AnswerFileOptions(lang, null, BypassBox.IsChecked == true);
             }
+            var options = new UsbWriteOptions(answer, LegacyBox.IsChecked == true ? UsbBootMode.Legacy : UsbBootMode.Uefi);
             fix = new UsbWriteFix(choice.Candidate, ConfirmBox.Text, _lastIso, BackupBox.Text.Trim().Length > 0 ? BackupBox.Text.Trim() : null, null, options);
         }
         catch (ArgumentException ex)

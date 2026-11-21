@@ -24,7 +24,10 @@ public static class IsoDownloadPages
 /// <param name="BypassWin11Checks">Bỏ qua kiểm tra TPM/Secure Boot/RAM/ổ/CPU của Windows 11. Không chính thức.</param>
 public sealed record AnswerFileOptions(string Language, int? EditionIndex = null, bool BypassWin11Checks = false);
 
-public sealed record UsbWriteOptions(AnswerFileOptions? Answer = null)
+/// <summary>Kiểu khởi động của USB: Uefi (GPT, mặc định) hoặc Legacy (MBR, cho máy BIOS cũ).</summary>
+public enum UsbBootMode { Uefi, Legacy }
+
+public sealed record UsbWriteOptions(AnswerFileOptions? Answer = null, UsbBootMode Mode = UsbBootMode.Uefi)
 {
     public static readonly UsbWriteOptions Default = new();
 }

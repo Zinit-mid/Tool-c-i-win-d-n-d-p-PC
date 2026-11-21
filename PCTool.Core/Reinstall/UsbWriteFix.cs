@@ -38,7 +38,7 @@ public static class UsbLayoutPlanner
 /// <summary>Kiểm tra lại USB sau khi ghi (đọc kết quả từ script chỉ đọc). Hàm thuần để test được.</summary>
 public static class UsbWriteVerifier
 {
-    public static IReadOnlyList<string> Problems(string json, int diskNumber, IsoInfo iso, bool split, bool expectAnswer = false)
+    public static IReadOnlyList<string> Problems(string json, int diskNumber, IsoInfo iso, bool split, bool expectAnswer = false, UsbBootMode mode = UsbBootMode.Uefi)
     {
         var p = new List<string>();
         JsonDocument doc;
@@ -49,11 +49,18 @@ public static class UsbWriteVerifier
             var r = doc.RootElement;
             if (r.ValueKind != JsonValueKind.Object) return new[] { "Không đọc được kết quả kiểm tra lại USB." };
 
-            if (Str(r, "style") != "GPT") p.Add("Bảng phân vùng không phải GPT.");
+            bool legacy = mode == UsbBootMode.Legacy;
+            if (Str(r, "style") != (legacy ? "MBR" : "GPT")) p.Add(legacy ? "Bảng phân vùng không phải MBR." : "Bảng phân vùng không phải GPT.");
             if (Num(r, "bootDisk") != diskNumber || Num(r, "dataDisk") != diskNumber) p.Add("Phân vùng không nằm trên ổ USB đã chọn.");
             if (Str(r, "bootLabel") != UsbLayoutPlanner.BootLabel || Str(r, "bootFs") != "FAT32") p.Add("Phân vùng khởi động không đúng (cần FAT32, nhãn PCTOOL-BOOT).");
             if (Str(r, "dataLabel") != UsbLayoutPlanner.DataLabel || Str(r, "dataFs") != "NTFS") p.Add("Phân vùng dữ liệu không đúng (cần NTFS, nhãn PCTOOL-DATA).");
-            if (!Bool(r, "efi")) p.Add("Thiếu efi\\boot\\bootx64.efi trên USB.");
+            if (legacy)
+            {
+                if (!Bool(r, "active")) p.Add("Phân vùng khởi động chưa được đặt là Active (máy BIOS cũ sẽ không khởi động được).");
+                if (!Bool(r, "bootmgr")) p.Add("Thiếu bootmgr trên USB.");
+                if (!Bool(r, "bcd")) p.Add("Thiếu boot\\bcd trên USB.");
+            }
+            else if (!Bool(r, "efi")) p.Add("Thiếu efi\\boot\\bootx64.efi trên USB.");
             if (!Bool(r, "bootWim")) p.Add("Thiếu sources\\boot.wim trên USB.");
             if (expectAnswer && !Bool(r, "answer")) p.Add("Thiếu file autounattend.xml trên USB.");
 
@@ -153,14 +160,18 @@ public sealed class UsbWriteFix : IFix
             {
                 $"XÓA TOÀN BỘ dữ liệu trên ổ USB số {d.Number}: {d.Name}, {UsbReport.Size(d.Size)}, serial {d.Serial} (đang dùng {used}). KHÔNG KHÔI PHỤC ĐƯỢC.",
                 "Kiểm tra lại ổ ngay trước khi xóa; nếu ổ đã đổi (số ổ, mã, serial, dung lượng) thì HỦY, chưa xóa gì",
-                $"Tạo bảng phân vùng GPT; phân vùng 1 FAT32 \"{UsbLayoutPlanner.BootLabel}\" {UsbReport.Size(_layout.BootBytes)} (khởi động + bộ cài); phân vùng 2 NTFS \"{UsbLayoutPlanner.DataLabel}\" khoảng {UsbReport.Size(_layout.DataBytes)}",
+                $"Tạo bảng phân vùng {(_options.Mode == UsbBootMode.Legacy ? "MBR (máy BIOS cũ/Legacy), phân vùng 1 đặt Active" : "GPT")}; phân vùng 1 FAT32 \"{UsbLayoutPlanner.BootLabel}\" {UsbReport.Size(_layout.BootBytes)} (khởi động + bộ cài); phân vùng 2 NTFS \"{UsbLayoutPlanner.DataLabel}\" khoảng {UsbReport.Size(_layout.DataBytes)}",
                 $"Gắn tạm file ISO {_iso.Path} (chỉ đọc) và chép nội dung vào phân vùng 1" +
                     (_split ? "; install.wim lớn hơn 4 GB nên được tách thành các file .swm bằng DISM" : ""),
-                "Kiểm tra lại USB: phân vùng, nhãn, bootx64.efi, boot.wim, dung lượng file cài",
+                _options.Mode == UsbBootMode.Legacy
+                    ? "Kiểm tra lại USB: MBR, Active, nhãn, bootmgr, boot\\bcd, boot.wim, dung lượng file cài"
+                    : "Kiểm tra lại USB: phân vùng, nhãn, bootx64.efi, boot.wim, dung lượng file cài",
                 "Không đụng tới ổ nào khác, không đụng tới ổ Windows. Quá trình có thể mất 10-30 phút, đừng rút USB"
             };
+            if (_options.Mode == UsbBootMode.Legacy)
+                list.Insert(4, "Ghi boot sector kiểu cũ bằng bootsect.exe của chính file ISO (chỉ lên phân vùng USB đã chọn)");
             if (_options.Answer is { } a)
-                list.Insert(4, $"Ghi file autounattend.xml tối thiểu vào USB (ngôn ngữ {a.Language}, chấp nhận điều khoản, bỏ qua màn nhập key" +
+                list.Insert(list.Count - 2, $"Ghi file autounattend.xml tối thiểu vào USB (ngôn ngữ {a.Language}, chấp nhận điều khoản, bỏ qua màn nhập key" +
                     (a.EditionIndex is { } ei ? $", chọn sẵn phiên bản số {ei}" : "") +
                     (a.BypassWin11Checks ? "; BỎ QUA kiểm tra phần cứng Windows 11 (không chính thức, Microsoft có thể không hỗ trợ/cập nhật máy này)" : "") +
                     "). File này KHÔNG chọn và KHÔNG xóa ổ cài: bạn vẫn tự chọn ổ ở màn hình của Microsoft");
@@ -218,6 +229,17 @@ public sealed class UsbWriteFix : IFix
                 " USB hiện chưa dùng được, hãy ghi lại.");
         }
 
+        if (_options.Mode == UsbBootMode.Legacy)
+        {
+            progress.Report("Đang ghi boot sector kiểu BIOS cũ...");
+            var rb = await _run(BuildBootSectorScript(_boot), ct);
+            if (rb.ExitCode != 0 || LastLine(rb.Output) != "OK")
+            {
+                Logger.Error("Ghi boot sector lỗi: " + rb.Error + " | " + rb.Output);
+                return FixResult.Failed("Ghi boot sector (bootsect) không thành công: " + Short(rb.Error, rb.Output) + " USB chưa dùng được cho máy BIOS cũ, hãy ghi lại.");
+            }
+        }
+
         if (_answerXml is not null)
         {
             progress.Report("Đang ghi file autounattend.xml...");
@@ -238,7 +260,7 @@ public sealed class UsbWriteFix : IFix
         if (_boot is null || _data is null) return false;
         var r = await _run(BuildVerifyScript(_boot, _data), ct);
         if (r.ExitCode != 0 || string.IsNullOrWhiteSpace(r.Output)) return false;
-        var problems = UsbWriteVerifier.Problems(LastLine(r.Output) ?? "", _candidate.Disk.Number, _iso, _split, _answerXml is not null);
+        var problems = UsbWriteVerifier.Problems(LastLine(r.Output) ?? "", _candidate.Disk.Number, _iso, _split, _answerXml is not null, _options.Mode);
         foreach (var p in problems) Logger.Warn("Kiểm tra lại USB: " + p);
         return problems.Count == 0;
     }
@@ -248,6 +270,9 @@ public sealed class UsbWriteFix : IFix
     public string BuildPartitionScript()
     {
         var d = _candidate.Disk;
+        var legacy = _options.Mode == UsbBootMode.Legacy;
+        var style = legacy ? "MBR" : "GPT";
+        var active = legacy ? " -IsActive" : "";
         return $$"""
 $ErrorActionPreference = 'Stop'
 $n = {{d.Number}}
@@ -263,8 +288,8 @@ $sys = ($env:SystemDrive -replace ':', '')
 $hit = @(Get-Partition -DiskNumber $n -ErrorAction SilentlyContinue | Where-Object { $_.DriveLetter -and "$($_.DriveLetter)" -eq $sys })
 if ($hit.Count -gt 0) { throw 'Ổ này chứa ổ Windows đang chạy.' }
 if ("$($disk.PartitionStyle)" -ne 'RAW') { Clear-Disk -Number $n -RemoveData -RemoveOEM -Confirm:$false }
-Initialize-Disk -Number $n -PartitionStyle GPT
-$p1 = New-Partition -DiskNumber $n -Size {{_layout.BootBytes}} -AssignDriveLetter
+Initialize-Disk -Number $n -PartitionStyle {{style}}
+$p1 = New-Partition -DiskNumber $n -Size {{_layout.BootBytes}} -AssignDriveLetter{{active}}
 $v1 = $p1 | Format-Volume -FileSystem FAT32 -NewFileSystemLabel '{{UsbLayoutPlanner.BootLabel}}' -Confirm:$false
 $p2 = New-Partition -DiskNumber $n -UseMaximumSize -AssignDriveLetter
 $v2 = $p2 | Format-Volume -FileSystem NTFS -NewFileSystemLabel '{{UsbLayoutPlanner.DataLabel}}' -Confirm:$false
@@ -299,6 +324,31 @@ try {
   if ($split) {
     Split-WindowsImage -ImagePath ($src + 'sources\install.wim') -SplitImagePath ($dst + 'sources\install.swm') -FileSize 3800 | Out-Null
   }
+} finally {
+  if (-not $wasMounted) { Dismount-DiskImage -ImagePath $iso | Out-Null }
+}
+'OK'
+""";
+    }
+
+    /// <summary>Chế độ Legacy: ghi boot sector bằng bootsect.exe nằm trong chính ISO (boot\\bootsect.exe), chỉ lên phân vùng USB đã chọn.</summary>
+    public string BuildBootSectorScript(string bootLetter)
+    {
+        if (!Letter.IsMatch(bootLetter)) throw new ArgumentException("Ký tự ổ không hợp lệ.", nameof(bootLetter));
+        return $$"""
+$ErrorActionPreference = 'Stop'
+$boot = '{{bootLetter}}'
+$iso = '{{_iso.Path}}'
+if ((Get-Partition -DriveLetter $boot).DiskNumber -ne {{_candidate.Disk.Number}}) { throw 'Phân vùng đích không nằm trên ổ USB đã chọn.' }
+$wasMounted = [bool](Get-DiskImage -ImagePath $iso).Attached
+if (-not $wasMounted) { Mount-DiskImage -ImagePath $iso -StorageType ISO -Access ReadOnly | Out-Null }
+try {
+  $letter = "$((Get-DiskImage -ImagePath $iso | Get-Volume).DriveLetter)"
+  if (-not $letter) { throw 'Không đọc được ổ ảo của file ISO.' }
+  $bs = $letter + ':\boot\bootsect.exe'
+  if (-not (Test-Path -LiteralPath $bs)) { throw 'ISO không có boot\bootsect.exe nên không ghi được boot sector kiểu cũ.' }
+  & $bs /nt60 ($boot + ':') /force /mbr | Out-Null
+  if ($LASTEXITCODE -ne 0) { throw "bootsect báo lỗi (mã $LASTEXITCODE)" }
 } finally {
   if (-not $wasMounted) { Dismount-DiskImage -ImagePath $iso | Out-Null }
 }
@@ -346,6 +396,9 @@ foreach ($f in $inst) { $sum += $f.Length }
   dataLabel = "$($dv.FileSystemLabel)"
   dataFs = "$($dv.FileSystem)"
   efi = [bool](Test-Path -LiteralPath ($root + 'efi\boot\bootx64.efi'))
+  active = [bool]$bp.IsActive
+  bootmgr = [bool](Test-Path -LiteralPath ($root + 'bootmgr'))
+  bcd = [bool](Test-Path -LiteralPath ($root + 'boot\bcd'))
   answer = [bool](Test-Path -LiteralPath ($root + 'autounattend.xml'))
   bootWim = [bool](Test-Path -LiteralPath ($root + 'sources\boot.wim'))
   hasSwm = [bool](@($inst | Where-Object { $_.Name -like '*.swm' }).Count -gt 0)
