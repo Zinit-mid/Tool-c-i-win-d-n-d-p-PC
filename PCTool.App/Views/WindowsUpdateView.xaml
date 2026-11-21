@@ -1,0 +1,38 @@
+<UserControl x:Class="PCTool.Views.WindowsUpdateView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel Margin="16">
+        <TextBlock Text="Windows Update" FontSize="22" FontWeight="SemiBold" />
+        <TextBlock Foreground="Gray" Margin="0,4,0,12" TextWrapping="Wrap"
+                   Text="Tạm dừng Windows Update trong lúc cài phần mềm hoặc driver. App luôn hẹn giờ để Windows tự bật lại, kể cả khi bạn tắt app hoặc khởi động lại máy. Máy công ty có thể bị chính sách chặn việc này." />
+
+        <GroupBox Header="Trạng thái hiện tại" Padding="10">
+            <StackPanel>
+                <TextBlock x:Name="StateText" FontSize="16" FontWeight="SemiBold" Text="Chưa kiểm tra." />
+                <TextBlock x:Name="DetailText" Foreground="Gray" TextWrapping="Wrap" Margin="0,4,0,0" />
+                <TextBlock x:Name="CountdownText" Margin="0,4,0,0" />
+            </StackPanel>
+        </GroupBox>
+
+        <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+            <TextBlock Text="Tạm dừng trong:" VerticalAlignment="Center" Margin="0,0,8,0" />
+            <ComboBox x:Name="MinutesBox" Width="110" Height="32" SelectedIndex="0" Margin="0,0,16,0">
+                <ComboBoxItem Content="1 giờ" Tag="60" />
+                <ComboBoxItem Content="6 giờ" Tag="360" />
+                <ComboBoxItem Content="24 giờ" Tag="1440" />
+            </ComboBox>
+            <CheckBox x:Name="DryRunBox" Content="Chạy thử (không thay đổi máy)" IsChecked="True" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <WrapPanel Margin="0,12,0,0">
+            <Button x:Name="RefreshButton" Content="Kiểm tra trạng thái" Width="160" Height="40" Margin="0,0,10,6"
+                    Click="RefreshButton_Click" />
+            <Button x:Name="PauseButton" Content="Tạm dừng Update" Width="150" Height="40" Margin="0,0,10,6"
+                    Click="PauseButton_Click" />
+            <Button x:Name="ResumeButton" Content="Bật lại ngay" Width="120" Height="40" Margin="0,0,10,6"
+                    Click="ResumeButton_Click" />
+        </WrapPanel>
+
+        <TextBlock x:Name="ResultText" Margin="0,8,0,0" TextWrapping="Wrap" />
+    </StackPanel>
+</UserControl>
