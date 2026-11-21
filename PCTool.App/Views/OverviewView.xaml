@@ -1,0 +1,66 @@
+<UserControl x:Class="PCTool.Views.OverviewView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock Text="Tổng quan: quét lỗi máy" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Foreground="Gray" Margin="0,4,0,0" TextWrapping="Wrap"
+                       Text="Bấm Quét ngay để kiểm tra RAM/CPU, chương trình khởi động, mạng/DNS, Windows Update, sức khỏe phần cứng, rác và máy in. Quét chỉ đọc thông tin. Với mỗi vấn đề, bạn chọn dòng rồi bấm Xem và sửa; app sẽ hỏi trước khi làm." />
+        </StackPanel>
+
+        <DataGrid x:Name="FindingsGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True"
+                  CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                  SelectionMode="Single" SelectionChanged="FindingsGrid_SelectionChanged">
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding SeverityKey}" Value="Critical">
+                            <Setter Property="Background" Value="#FFFDE7E7" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding SeverityKey}" Value="Warning">
+                            <Setter Property="Background" Value="#FFFFF6DD" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Mức" Binding="{Binding SeverityText}" Width="110" />
+                <DataGridTextColumn Header="Vấn đề" Binding="{Binding Title}" Width="260">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextWrapping" Value="Wrap" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Nguyên nhân / cách xử lý" Binding="{Binding Cause}" Width="*">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextWrapping" Value="Wrap" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Sửa tự động" Binding="{Binding FixText}" Width="150" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <StackPanel Grid.Row="2" Margin="0,10,0,0">
+            <ProgressBar x:Name="Progress" Height="8" Minimum="0" Maximum="100" />
+            <TextBlock x:Name="StatusText" Margin="0,6,0,0" Foreground="Gray" Text="Sẵn sàng." TextWrapping="Wrap" />
+        </StackPanel>
+
+        <WrapPanel Grid.Row="3" Margin="0,10,0,0">
+            <Button x:Name="ScanButton" Content="Quét ngay" Width="120" Height="40" Margin="0,0,10,6" Click="ScanButton_Click" />
+            <Button x:Name="CancelButton" Content="Dừng" Width="80" Height="40" Margin="0,0,10,6" Click="CancelButton_Click" IsEnabled="False" />
+            <Button x:Name="FixButton" Content="Xem và sửa..." Width="130" Height="40" Margin="0,0,10,6" Click="FixButton_Click" IsEnabled="False" />
+            <Button x:Name="CopyButton" Content="Sao chép báo cáo" Width="140" Height="40" Margin="0,0,10,6" Click="CopyButton_Click" IsEnabled="False" />
+            <CheckBox x:Name="DryRunBox" Content="Chạy thử (không thay đổi máy)" IsChecked="True" VerticalAlignment="Center" Margin="10,0,0,6" />
+        </WrapPanel>
+    </Grid>
+</UserControl>

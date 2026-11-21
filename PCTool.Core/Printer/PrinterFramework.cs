@@ -3,8 +3,6 @@ using PCTool.Core.Windows;
 
 namespace PCTool.Core.Printer;
 
-public delegate Task<PowerShellResult> ScriptRunner(string script, CancellationToken ct);
-
 /// <summary>Khởi động lại dịch vụ in (Print Spooler). Các lệnh in đang chạy có thể bị gián đoạn.</summary>
 public sealed class RestartSpoolerFix : IFix
 {

@@ -30,6 +30,9 @@
         </DockPanel>
 
         <TabControl Grid.Row="2" TabStripPlacement="Left" Margin="6">
+            <TabItem Header="Tổng quan (quét lỗi)" Padding="12,8">
+                <views:OverviewView />
+            </TabItem>
             <TabItem Header="Dọn dẹp rác" Padding="12,8">
                 <views:CleanupView />
             </TabItem>
