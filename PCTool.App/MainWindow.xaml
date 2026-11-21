@@ -70,8 +70,7 @@
                 <views:DefenderView />
             </TabItem>
             <TabItem Header="Cài lại Windows" Padding="12,8">
-                <views:PlaceholderView Title="Cài lại Windows"
-                    Detail="Chọn ổ giữ/ổ cài, sao lưu, tạo USB cài tự động. (Làm sau cùng, có chế độ chạy thử)" />
+                <views:ReinstallView />
             </TabItem>
         </TabControl>
 
