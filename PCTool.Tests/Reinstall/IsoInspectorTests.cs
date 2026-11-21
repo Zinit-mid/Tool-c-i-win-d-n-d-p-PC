@@ -11,8 +11,8 @@ public sealed class IsoInspectorTests
         new(idx, name, "Professional", version, arch, new[] { "en-US" }, 5 * GB);
 
     private static IsoInfo Info(bool wim = true, long wimSize = 5 * GB, bool esd = false, long esdSize = 0, bool efi = true,
-        bool mounted = false, params IsoImage[] images) =>
-        new(@"E:\Win11.iso", 6 * GB, mounted, wim, wimSize, esd, esdSize, efi, images.Length > 0 ? images : new[] { Img() });
+        bool mounted = false, IsoImage[]? images = null) =>
+        new(@"E:\Win11.iso", 6 * GB, mounted, wim, wimSize, esd, esdSize, efi, images is { Length: > 0 } ? images : new[] { Img() });
 
     private static ScriptRunner Fake(string output, string error = "") =>
         (_, _) => Task.FromResult(new PowerShellResult(0, output, error));
@@ -165,19 +165,19 @@ public sealed class IsoInspectorTests
     [InlineData("12")]
     [InlineData("arm64")]
     public void NonX64_Blocks(string arch) =>
-        Assert.False(IsoInspector.Evaluate(Info(images: Img(arch: arch))).UsableForUsb);
+        Assert.False(IsoInspector.Evaluate(Info(images: new[] { Img(arch: arch) })).UsableForUsb);
 
     [Theory]
     [InlineData("9")]
     [InlineData("x64")]
     [InlineData("AMD64")]
     public void X64_Accepted(string arch) =>
-        Assert.True(IsoInspector.Evaluate(Info(images: Img(arch: arch))).UsableForUsb);
+        Assert.True(IsoInspector.Evaluate(Info(images: new[] { Img(arch: arch) })).UsableForUsb);
 
     [Fact]
     public void Unknown_Arch_Warns_Not_Blocks()
     {
-        var v = IsoInspector.Evaluate(Info(images: Img(arch: "")));
+        var v = IsoInspector.Evaluate(Info(images: new[] { Img(arch: "") }));
         Assert.True(v.UsableForUsb);
         Assert.Contains(v.Warnings, w => w.Contains("kiến trúc"));
     }
