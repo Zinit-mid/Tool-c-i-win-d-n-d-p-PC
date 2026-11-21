@@ -2,9 +2,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
-using System.Security.Cryptography;
 using System.Text.Json;
 using PCTool.Core.Framework;
+using PCTool.Core.Update;
 
 namespace PCTool.Services;
 
@@ -60,10 +60,7 @@ public static class UpdateService
 
             string? sha = null;
             if (a.TryGetProperty("digest", out var d) && d.ValueKind == JsonValueKind.String)
-            {
-                var s = d.GetString() ?? "";
-                if (s.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase)) sha = s[7..];
-            }
+                sha = UpdateValidator.ParseSha256(d.GetString());
 
             var notes = root.TryGetProperty("body", out var b) && b.ValueKind == JsonValueKind.String ? b.GetString() ?? "" : "";
             return new UpdateInfo(remote, tag, notes.Trim(),
@@ -79,8 +76,10 @@ public static class UpdateService
         var exe = Environment.ProcessPath ?? throw new InvalidOperationException("Không xác định được đường dẫn app.");
         if (!string.Equals(Path.GetFileName(exe), AssetName, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException($"Chỉ tự cập nhật được khi chạy file {AssetName} (đang chạy: {Path.GetFileName(exe)}).");
-        if (!info.DownloadUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException("Đường dẫn tải không hợp lệ.");
+        if (!UpdateValidator.IsAllowedInitialUrl(info.DownloadUrl, Owner, Repo))
+            throw new InvalidOperationException("Đường dẫn tải không hợp lệ (không phải từ GitHub của PCTool).");
+        if (string.IsNullOrEmpty(info.Sha256))
+            throw new InvalidOperationException("GitHub không cung cấp mã SHA256 cho bản này nên app từ chối tự cập nhật. Hãy tải bản mới thủ công.");
 
         var dir = Path.GetDirectoryName(exe)!;
         var tmp = exe + ".new";
@@ -130,6 +129,8 @@ public static class UpdateService
     {
         using var resp = await Http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
         resp.EnsureSuccessStatusCode();
+        if (!UpdateValidator.IsAllowedFinalUri(resp.RequestMessage?.RequestUri))
+            throw new InvalidOperationException("Máy chủ tải về không nằm trong danh sách cho phép, đã hủy cập nhật.");
         long total = resp.Content.Headers.ContentLength ?? expectedSize;
 
         await using var src = await resp.Content.ReadAsStreamAsync(ct);
@@ -146,23 +147,6 @@ public static class UpdateService
         }
     }
 
-    private static async Task VerifyAsync(string path, UpdateInfo info, CancellationToken ct)
-    {
-        var len = new FileInfo(path).Length;
-        if (len < 1_000_000) throw new InvalidDataException("File tải về quá nhỏ, có thể bị lỗi.");
-        if (info.Size > 0 && len != info.Size) throw new InvalidDataException("File tải về không đủ dung lượng.");
-
-        await using var fs = File.OpenRead(path);
-        var head = new byte[2];
-        if (await fs.ReadAsync(head, ct) != 2 || head[0] != 'M' || head[1] != 'Z')
-            throw new InvalidDataException("File tải về không phải file chạy của Windows.");
-
-        if (!string.IsNullOrEmpty(info.Sha256))
-        {
-            fs.Position = 0;
-            var hash = Convert.ToHexString(await SHA256.HashDataAsync(fs, ct));
-            if (!hash.Equals(info.Sha256, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidDataException("Mã kiểm tra (SHA256) không khớp, đã hủy cập nhật.");
-        }
-    }
+    private static Task VerifyAsync(string path, UpdateInfo info, CancellationToken ct) =>
+        UpdateValidator.VerifyFileAsync(path, info.Size, info.Sha256, ct);
 }
