@@ -119,10 +119,10 @@ public sealed class PrinterFrameworkTests
     public void Mapper_ConvertsLevels_AttachesFixesByCode_SkipsOk()
     {
         var report = new PrinterReport();
-        report.Findings.Add(new PCTool.Core.Printer.Finding { Level = "Error", Code = FindingCodes.SpoolerStopped, Problem = "Spooler không chạy", Advice = "Khởi động lại" });
-        report.Findings.Add(new PCTool.Core.Printer.Finding { Level = "Warn", Code = FindingCodes.QueueStuck, Printer = "HP", Problem = "Lệnh in kẹt", Advice = "Xóa hàng đợi" });
-        report.Findings.Add(new PCTool.Core.Printer.Finding { Level = "Warn", Printer = "HP", Problem = "Driver chung", Advice = "Cài driver" });
-        report.Findings.Add(new PCTool.Core.Printer.Finding { Level = "Ok", Problem = "Mọi thứ ổn" });
+        report.Findings.Add(new PrinterFinding { Level = "Error", Code = FindingCodes.SpoolerStopped, Problem = "Spooler không chạy", Advice = "Khởi động lại" });
+        report.Findings.Add(new PrinterFinding { Level = "Warn", Code = FindingCodes.QueueStuck, Printer = "HP", Problem = "Lệnh in kẹt", Advice = "Xóa hàng đợi" });
+        report.Findings.Add(new PrinterFinding { Level = "Warn", Printer = "HP", Problem = "Driver chung", Advice = "Cài driver" });
+        report.Findings.Add(new PrinterFinding { Level = "Ok", Problem = "Mọi thứ ổn" });
 
         var list = PrinterFindingMapper.Map(report, () => new RestartSpoolerFix(), () => new ClearPrintQueueFix());
 
@@ -139,7 +139,7 @@ public sealed class PrinterFrameworkTests
     public async Task Check_UsesDiagnosisAndMapper()
     {
         var report = new PrinterReport();
-        report.Findings.Add(new PCTool.Core.Printer.Finding { Level = "Error", Code = FindingCodes.SpoolerStopped, Problem = "x" });
+        report.Findings.Add(new PrinterFinding { Level = "Error", Code = FindingCodes.SpoolerStopped, Problem = "x" });
         var check = new PrinterCheck(_ => Task.FromResult(report));
 
         var list = await check.RunAsync(CancellationToken.None);
