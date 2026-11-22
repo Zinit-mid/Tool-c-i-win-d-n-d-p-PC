@@ -1,3 +1,4 @@
+using System.Windows.Controls;
 using System.Windows;
 using PCTool.Core.Framework;
 using PCTool.Services;
