@@ -83,7 +83,8 @@ public static class UpdateService
 
         var dir = Path.GetDirectoryName(exe)!;
         var tmp = exe + ".new";
-        var old = exe + ".old";
+        // Tên .old riêng mỗi lần: nếu bản cũ từ lần trước còn bị khóa thì không đụng nhau ("Access denied").
+        var old = exe + ".old-" + DateTime.Now.ToString("yyyyMMddHHmmss");
 
         Logger.Info($"Đang tải bản {info.Version}...");
         try
@@ -98,31 +99,44 @@ public static class UpdateService
         }
 
         // Đổi tên file đang chạy -> .old, đặt bản mới vào chỗ cũ. Lỗi thì trả lại như cũ.
-        try { if (File.Exists(old)) File.Delete(old); } catch { /* .old cũ còn bị khóa: sẽ ghi đè bằng Move bên dưới */ }
-        File.Move(exe, old, overwrite: true);
+        try { File.Move(exe, old); }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+        {
+            File.Delete(tmp);
+            throw new InvalidOperationException($"Không đổi tên được file đang chạy ({ex.Message}). Hãy đóng hẳn mọi cửa sổ PCTool (kiểm tra Task Manager), mở lại rồi cập nhật lần nữa. Thư mục: {dir}", ex);
+        }
         try
         {
             File.Move(tmp, exe);
         }
-        catch
+        catch (Exception ex)
         {
-            File.Move(old, exe, overwrite: true);
-            throw;
+            try { File.Move(old, exe, overwrite: true); } catch { /* giữ nguyên lỗi gốc */ }
+            throw new InvalidOperationException($"Không đặt được bản mới vào {exe} ({ex.Message}). Đã trả lại bản cũ.", ex);
         }
 
         Logger.Info($"Đã cập nhật lên {info.Version}, đang mở lại app...");
         Process.Start(new ProcessStartInfo(exe) { UseShellExecute = true, WorkingDirectory = dir });
     }
 
-    /// <summary>Dọn file .old/.new còn sót từ lần cập nhật trước.</summary>
+    /// <summary>Dọn file .old/.new còn sót từ các lần cập nhật trước (file nào còn bị khóa thì để lần sau).</summary>
     public static void CleanupLeftovers()
     {
         var exe = Environment.ProcessPath;
         if (exe == null) return;
-        foreach (var f in new[] { exe + ".old", exe + ".new" })
+        var dir = Path.GetDirectoryName(exe);
+        if (dir == null) return;
+        var name = Path.GetFileName(exe);
+        try
         {
-            try { if (File.Exists(f)) File.Delete(f); } catch { /* tiến trình cũ chưa thoát hẳn, lần sau dọn */ }
+            foreach (var f in Directory.EnumerateFiles(dir, name + ".*"))
+            {
+                var ext = Path.GetExtension(f);
+                if (ext.Equals(".new", StringComparison.OrdinalIgnoreCase) || ext.StartsWith(".old", StringComparison.OrdinalIgnoreCase))
+                    try { File.Delete(f); } catch { /* tiến trình cũ chưa thoát hẳn, lần sau dọn */ }
+            }
         }
+        catch { /* không liệt kê được thư mục: bỏ qua */ }
     }
 
     private static async Task DownloadAsync(string url, string path, long expectedSize, IProgress<double> progress, CancellationToken ct)
