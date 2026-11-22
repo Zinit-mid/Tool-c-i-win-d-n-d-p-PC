@@ -14,6 +14,16 @@ public partial class ToolsView : UserControl
     {
         InitializeComponent();
         DryRunBox.IsChecked = SettingsService.Default.DryRunDefault;
+        foreach (var pg in IntelRstPages.All)
+        {
+            var b = new Button { Content = pg.Title, Margin = new Thickness(0, 0, 8, 6), Padding = new Thickness(10, 4, 10, 4), Tag = pg.Url };
+            b.Click += (_, _) =>
+            {
+                try { IntelRstPages.Open((string)b.Tag, u => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(u) { UseShellExecute = true })); }
+                catch (Exception ex) { StatusText.Text = "Không mở được trang: " + ex.Message; }
+            };
+            IrstPanel.Children.Add(b);
+        }
     }
 
     private bool Dry => DryRunBox.IsChecked == true;

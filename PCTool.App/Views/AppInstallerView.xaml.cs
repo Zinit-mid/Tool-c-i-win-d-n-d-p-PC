@@ -201,6 +201,12 @@ public partial class AppInstallerView : UserControl
         Reload();
     }
 
+    private void SuggestButton_Click(object sender, RoutedEventArgs e)
+    {
+        StatusText.Text = _catalog.AddSuggested().Message;
+        Reload();
+    }
+
     private void RestoreButton_Click(object sender, RoutedEventArgs e)
     {
         StatusText.Text = _catalog.RestoreHiddenDefaults().Message;

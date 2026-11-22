@@ -43,6 +43,56 @@ public sealed class AppCatalog
         new AppEntry { Id = "facebook", Name = "Facebook", Kind = AppKind.WebShortcut, Url = "https://www.facebook.com", Group = "Liên lạc", SelectedByDefault = true, BuiltIn = true }
     };
 
+    /// <summary>
+    /// Bộ app gợi ý (mã winget đã đối chiếu với kho winget-pkgs của Microsoft). KHÔNG tự hiện; bấm "Thêm app gợi ý" mới thêm,
+    /// mặc định không tick. Chưa có: Notepad++ và VC++ 2015+ (mã chứa dấu +, bộ kiểm tra mã của PCTool không nhận),
+    /// WhatsApp (chỉ có trên Microsoft Store), EVKey (không thấy trong kho).
+    /// </summary>
+    public static IReadOnlyList<AppEntry> Suggested { get; } = new[]
+    {
+        S("unikey", "UniKey", "UniKey.UniKey", "Tiện ích"),
+        S("7zip", "7-Zip", "7zip.7zip", "Tiện ích"),
+        S("winrar", "WinRAR", "RARLab.WinRAR", "Tiện ích"),
+        S("hibit-uninstaller", "HiBit Uninstaller", "HiBitSoftware.HiBitUninstaller", "Tiện ích"),
+        S("google-drive", "Google Drive", "Google.GoogleDrive", "Lưu trữ"),
+        S("onedrive", "OneDrive", "Microsoft.OneDrive", "Lưu trữ"),
+        S("firefox", "Firefox", "Mozilla.Firefox", "Trình duyệt"),
+        S("coccoc", "Cốc Cốc", "CocCoc.CocCoc", "Trình duyệt"),
+        S("brave", "Brave", "Brave.Brave", "Trình duyệt"),
+        S("klite", "K-Lite Codec Pack", "CodecGuide.K-LiteCodecPack.Standard", "Xem phim"),
+        S("vlc", "VLC", "VideoLAN.VLC", "Xem phim"),
+        S("foxit", "Foxit Reader", "Foxit.FoxitReader", "Đọc PDF"),
+        S("sumatrapdf", "SumatraPDF", "SumatraPDF.SumatraPDF", "Đọc PDF"),
+        S("ultraviewer", "UltraViewer", "DucFabulous.UltraViewer", "Điều khiển từ xa"),
+        S("teamviewer", "TeamViewer", "TeamViewer.TeamViewer", "Điều khiển từ xa"),
+        S("anydesk", "AnyDesk", "AnyDesk.AnyDesk", "Điều khiển từ xa"),
+        S("telegram", "Telegram", "Telegram.TelegramDesktop", "Liên lạc"),
+        S("discord", "Discord", "Discord.Discord", "Liên lạc"),
+        S("zoom", "Zoom", "Zoom.Zoom", "Liên lạc"),
+        S("viber", "Viber", "Rakuten.Viber", "Liên lạc"),
+        S("teams", "Microsoft Teams", "Microsoft.Teams", "Liên lạc")
+    };
+
+    private static AppEntry S(string id, string name, string wingetId, string group) =>
+        new() { Id = id, Name = name, Kind = AppKind.Winget, WingetId = wingetId, Group = group, SelectedByDefault = false, BuiltIn = false };
+
+    /// <summary>Thêm các app gợi ý còn thiếu. Mục đã có (cùng id) giữ nguyên, không ghi đè.</summary>
+    public CatalogOpResult AddSuggested()
+    {
+        int added = 0;
+        var r = Mutate(file =>
+        {
+            foreach (var e in Suggested)
+            {
+                if (file.Items.Any(i => i.Id == e.Id) || Defaults.Any(d => d.Id == e.Id)) continue;
+                if (AppEntryValidator.Validate(e).Count > 0) continue;
+                file.Items.Add(e.Clone());
+                added++;
+            }
+        }, "");
+        return r.Ok ? new(true, added == 0 ? "Các app gợi ý đã có đủ trong danh sách." : $"Đã thêm {added} app gợi ý (chưa tick, bạn tự chọn).") : r;
+    }
+
     internal sealed class UserFile
     {
         public int SchemaVersion { get; set; } = CurrentSchema;

@@ -42,6 +42,14 @@
                 </StackPanel>
             </GroupBox>
 
+            <GroupBox Header="4. Kho Driver IRST (Intel)" Padding="10" Margin="0,0,0,8">
+                <StackPanel>
+                    <TextBlock Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,6"
+                               Text="Máy Intel đời mới có thể không thấy ổ cứng khi cài Windows nếu thiếu driver IRST/VMD. Intel bắt bấm đồng ý giấy phép nên PCTool chỉ MỞ trang chính thức; bạn tự tải, giải nén, rồi chép thư mục vào USB bằng mục 3." />
+                    <WrapPanel x:Name="IrstPanel" />
+                </StackPanel>
+            </GroupBox>
+
             <CheckBox x:Name="DryRunBox" Content="Chạy thử (không thay đổi gì)" IsChecked="True" Margin="0,0,0,8" />
             <ProgressBar x:Name="Progress" Height="8" IsIndeterminate="False" />
             <TextBlock x:Name="StatusText" Margin="0,6,0,6" Foreground="Gray" TextWrapping="Wrap" Text="Sẵn sàng." />
