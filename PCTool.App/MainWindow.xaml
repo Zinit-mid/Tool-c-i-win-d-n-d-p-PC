@@ -33,49 +33,29 @@
         </Border>
 
         <Grid Grid.Row="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="235" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-            <Border Grid.Column="0" Background="White" BorderBrush="#FFE3E6EA" BorderThickness="0,0,1,0">
-                <ListBox x:Name="Nav" BorderThickness="0" Background="Transparent" Padding="8,8,8,12"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto"
-                         SelectionChanged="Nav_SelectionChanged">
-                <ListBoxItem Style="{StaticResource NavHeader}" Content="BẮT ĐẦU" />
-                <ListBoxItem Style="{StaticResource NavItem}" Tag="0" Content="Tổng quan (quét lỗi)" />
-                <ListBoxItem Style="{StaticResource NavHeader}" Content="DỌN DẸP &amp; TỐI ƯU" />
-                <ListBoxItem Style="{StaticResource NavItem}" Tag="1" Content="Dọn dẹp rác" />
-                <ListBoxItem Style="{StaticResource NavItem}" Tag="2" Content="Dọn thư mục thông minh" />
-                <ListBoxItem Style="{StaticResource NavItem}" Tag="3" Content="Gỡ phần mềm cứng đầu" />
-                <ListBoxItem Style="{StaticResource NavItem}" Tag="4" Content="File cứng đầu / Quyền" />
-                <ListBoxItem Style="{StaticResource NavItem}" Tag="5" Content="Phân vùng ổ cứng" />
-                <ListBoxItem Style="{StaticResource NavHeader}" Content="CÀI ĐẶT &amp; THIẾT LẬP" />
-                <ListBoxItem Style="{StaticResource NavItem}" Tag="6" Content="Cài nhanh ứng dụng" />
-                <ListBoxItem Style="{StaticResource NavItem}" Tag="7" Content="Thiết lập Windows" />
-                <ListBoxItem Style="{StaticResource NavItem}" Tag="8" Content="Tiện ích khác" />
-                <ListBoxItem Style="{StaticResource NavHeader}" Content="CÀI LẠI WINDOWS" />
-                <ListBoxItem Style="{StaticResource NavItem}" Tag="9" Content="Tạo USB cài Windows" />
-                <ListBoxItem Style="{StaticResource NavItem}" Tag="10" Content="Cài lại Win trực tiếp" />
-                <ListBoxItem Style="{StaticResource NavItem}" Tag="11" Content="Sao lưu Driver / Wi-Fi" />
-                <ListBoxItem Style="{StaticResource NavItem}" Tag="12" Content="Sao lưu / Khôi phục app" />
-                <ListBoxItem Style="{StaticResource NavItem}" Tag="13" Content="Khôi phục sau cài Win" />
-                <ListBoxItem Style="{StaticResource NavHeader}" Content="SỬA LỖI &amp; BẢO VỆ" />
-                <ListBoxItem Style="{StaticResource NavItem}" Tag="14" Content="Chẩn đoán máy in" />
-                <ListBoxItem Style="{StaticResource NavItem}" Tag="15" Content="Sửa lỗi Word / Excel" />
-                <ListBoxItem Style="{StaticResource NavItem}" Tag="16" Content="Windows Update" />
-                <ListBoxItem Style="{StaticResource NavItem}" Tag="17" Content="Windows Defender" />
-                <ListBoxItem Style="{StaticResource NavHeader}" Content="MÁY TÍNH" />
-                <ListBoxItem Style="{StaticResource NavItem}" Tag="18" Content="Thông số phần cứng" />
-                </ListBox>
+            <Border x:Name="BackBar" Grid.Row="0" Background="White" BorderBrush="#FFE3E6EA" BorderThickness="0,0,0,1" Padding="14,6" Visibility="Collapsed">
+                <DockPanel>
+                    <Button DockPanel.Dock="Left" Content="←  Trang chủ" Click="Home_Click" Margin="0,0,14,0" />
+                    <TextBlock x:Name="PageTitle" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+                </DockPanel>
             </Border>
 
-            <TabControl x:Name="Pages" Grid.Column="1" Margin="8,8,8,4" Background="Transparent" BorderThickness="0" Padding="0">
+            <TabControl x:Name="Pages" Grid.Row="1" Margin="10,8,10,4" Background="Transparent" BorderThickness="0" Padding="0">
                 <TabControl.Template>
                     <ControlTemplate TargetType="TabControl">
                         <ContentPresenter ContentSource="SelectedContent" />
                     </ControlTemplate>
                 </TabControl.Template>
+                <TabItem Header="Trang chủ">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel x:Name="HomePanel" Margin="6,4,6,16" />
+                    </ScrollViewer>
+                </TabItem>
             <TabItem Header="Tổng quan (quét lỗi)"><views:OverviewView /></TabItem>
             <TabItem Header="Dọn dẹp rác"><views:CleanupView /></TabItem>
             <TabItem Header="Dọn thư mục thông minh"><views:FolderCleanupView /></TabItem>
@@ -95,6 +75,8 @@
             <TabItem Header="Windows Update"><views:WindowsUpdateView /></TabItem>
             <TabItem Header="Windows Defender"><views:DefenderView /></TabItem>
             <TabItem Header="Thông số phần cứng"><views:HardwareView /></TabItem>
+            <TabItem Header="Công cụ PDF"><views:PdfToolsView /></TabItem>
+            <TabItem Header="Xem PDF"><views:PdfViewerView /></TabItem>
             </TabControl>
         </Grid>
 

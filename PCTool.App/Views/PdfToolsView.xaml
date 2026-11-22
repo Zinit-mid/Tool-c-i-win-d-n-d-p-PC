@@ -1,0 +1,71 @@
+<UserControl x:Class="PCTool.Views.PdfToolsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16">
+            <TextBlock Text="Công cụ PDF" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Foreground="Gray" Margin="0,4,0,10" TextWrapping="Wrap"
+                       Text="Gộp, tách, xoay trang PDF và chuyển ảnh thành PDF. Mọi kết quả là file MỚI, file gốc không bao giờ bị sửa hay ghi đè. Không hỗ trợ PDF có mật khẩu." />
+
+            <GroupBox Header="Nơi lưu kết quả">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Chọn thư mục..." Margin="8,0,0,0" Click="BrowseOut_Click" />
+                    <TextBox x:Name="OutBox" VerticalContentAlignment="Center" ToolTip="Để trống = lưu cạnh file nguồn" />
+                </DockPanel>
+            </GroupBox>
+
+            <GroupBox Header="1. Gộp nhiều PDF thành một">
+                <StackPanel>
+                    <ListBox x:Name="MergeList" Height="110" SelectionMode="Single" />
+                    <WrapPanel Margin="0,8,0,0">
+                        <Button Content="Thêm file..." Margin="0,0,8,4" Click="MergeAdd_Click" />
+                        <Button Content="Lên" Margin="0,0,8,4" Click="MergeUp_Click" />
+                        <Button Content="Xuống" Margin="0,0,8,4" Click="MergeDown_Click" />
+                        <Button Content="Bỏ file chọn" Margin="0,0,8,4" Click="MergeRemove_Click" />
+                        <Button Content="Gộp" Style="{StaticResource PrimaryButton}" Margin="0,0,8,4" Click="Merge_Click" />
+                    </WrapPanel>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="2. Tách trang / Xoay trang (một file PDF)">
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,8">
+                        <Button DockPanel.Dock="Right" Content="Chọn PDF..." Margin="8,0,0,0" Click="SrcBrowse_Click" />
+                        <TextBox x:Name="SrcBox" VerticalContentAlignment="Center" />
+                    </DockPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock Text="Trang (vd 1-3,5,8-; để trống = tất cả):" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <TextBox x:Name="PagesBox" Width="160" />
+                    </StackPanel>
+                    <WrapPanel>
+                        <Button Content="Lấy các trang này thành 1 file" Margin="0,0,8,4" Click="Extract_Click" />
+                        <Button Content="Tách mỗi trang 1 file" Margin="0,0,16,4" Click="SplitEach_Click" />
+                        <ComboBox x:Name="DegBox" Width="110" SelectedIndex="0" Margin="0,0,8,4" VerticalContentAlignment="Center">
+                            <ComboBoxItem Content="Xoay 90°" />
+                            <ComboBoxItem Content="Xoay 180°" />
+                            <ComboBoxItem Content="Xoay 270°" />
+                        </ComboBox>
+                        <Button Content="Xoay các trang trên" Margin="0,0,8,4" Click="Rotate_Click" />
+                    </WrapPanel>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="3. Ảnh thành PDF (JPG, PNG, BMP)">
+                <StackPanel>
+                    <ListBox x:Name="ImgList" Height="110" SelectionMode="Single" />
+                    <WrapPanel Margin="0,8,0,0">
+                        <Button Content="Thêm ảnh..." Margin="0,0,8,4" Click="ImgAdd_Click" />
+                        <Button Content="Lên" Margin="0,0,8,4" Click="ImgUp_Click" />
+                        <Button Content="Xuống" Margin="0,0,8,4" Click="ImgDown_Click" />
+                        <Button Content="Bỏ ảnh chọn" Margin="0,0,8,4" Click="ImgRemove_Click" />
+                        <Button Content="Tạo PDF" Style="{StaticResource PrimaryButton}" Margin="0,0,8,4" Click="ImgToPdf_Click" />
+                    </WrapPanel>
+                </StackPanel>
+            </GroupBox>
+
+            <ProgressBar x:Name="Progress" Height="6" IsIndeterminate="False" />
+            <TextBox x:Name="ResultBox" Height="110" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True"
+                     VerticalScrollBarVisibility="Auto" Margin="0,6,0,0" Text="Sẵn sàng." />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
