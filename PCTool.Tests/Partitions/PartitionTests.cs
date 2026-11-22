@@ -54,7 +54,7 @@ public sealed class PartitionTests
         Assert.DoesNotContain("Remove-Partition", s);
         Assert.DoesNotContain("Clear-Disk", s);
         Assert.DoesNotContain("diskpart", s, StringComparison.OrdinalIgnoreCase);
-        Assert.Equal(1, System.Text.RegularExpressions.Regex.Matches(s, "Format-Volume").Count);
+        Assert.Single(System.Text.RegularExpressions.Regex.Matches(s, "Format-Volume"));
         Assert.Contains("Format-Volume -DriveLetter $nl", s);   // chỉ ổ mới
         Assert.Contains("-Offset", s);                           // đặt đúng chỗ vừa giải phóng
         Assert.Contains("USB", s);
