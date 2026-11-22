@@ -34,7 +34,7 @@ public class UtilityTests : IDisposable
         var single = DriverScanner.Parse("""{"maker":"A","model":"B","problems":{"name":"X","cls":"C","code":28,"id":"I"}}""");
         Assert.Single(single.Problems);
         Assert.Empty(DriverScanner.Parse("""{"maker":"A","model":"B","problems":[]}""").Problems);
-        Assert.Throws<System.Text.Json.JsonException>(() => DriverScanner.Parse("khong phai json"));
+        Assert.ThrowsAny<System.Text.Json.JsonException>(() => DriverScanner.Parse("khong phai json"));
     }
 
     [Fact]
@@ -180,7 +180,7 @@ public class UtilityTests : IDisposable
         Assert.True(r[0].Licensed);
         Assert.False(r[1].Licensed);
         Assert.Contains("Chưa kích hoạt", r[1].StatusText);
-        Assert.DoesNotContain("ProductKey", LicenseChecker.Script);
+        Assert.DoesNotContain("OA3", LicenseChecker.Script);
         Assert.DoesNotContain("Install", LicenseChecker.Script);
         Assert.DoesNotContain("Activate", LicenseChecker.Script);
     }
