@@ -1,0 +1,47 @@
+<UserControl x:Class="PCTool.Views.StubbornView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16">
+            <TextBlock Text="File cứng đầu / Cấp lại quyền" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Foreground="OrangeRed" Margin="0,4,0,10" TextWrapping="Wrap"
+                       Text="Dùng khi một thư mục/file không mở, không xóa được vì thiếu quyền (thường là dữ liệu từ ổ Windows cũ). PCTool KHÔNG xóa thẳng: file được CHUYỂN vào thùng riêng của PCTool, bạn xem lại rồi mới dọn thùng. Không đụng thư mục hệ thống. Chưa thử trên máy thật; hãy thử với thư mục không quan trọng." />
+
+            <DockPanel Margin="0,0,0,8">
+                <Button DockPanel.Dock="Right" Content="Chọn thư mục..." Width="120" Height="28" Margin="8,0,0,0" Click="BrowseFolder_Click" />
+                <Button DockPanel.Dock="Right" Content="Chọn file..." Width="100" Height="28" Margin="8,0,0,0" Click="BrowseFile_Click" />
+                <TextBox x:Name="PathBox" Height="28" VerticalContentAlignment="Center" />
+            </DockPanel>
+            <CheckBox x:Name="DryRunBox" Content="Chạy thử (không thay đổi gì)" IsChecked="True" Margin="0,0,0,8" />
+
+            <GroupBox Header="1. Cấp lại toàn quyền (lưu quyền cũ trước)" Padding="10" Margin="0,0,0,8">
+                <WrapPanel>
+                    <TextBlock Text="Gõ mã CAP QUYEN:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <TextBox x:Name="GrantCodeBox" Width="120" Height="26" Margin="0,0,10,0" />
+                    <Button x:Name="GrantButton" Content="Cấp quyền" Width="110" Height="30" Click="GrantButton_Click" />
+                </WrapPanel>
+            </GroupBox>
+
+            <GroupBox Header="2. Chuyển vào thùng PCTool (thay cho xóa)" Padding="10" Margin="0,0,0,8">
+                <StackPanel>
+                    <TextBlock x:Name="MoveHint" Foreground="Gray" Margin="0,0,0,6" TextWrapping="Wrap" Text="Mã xác nhận: CHUYEN + khoảng trắng + tên file/thư mục (sẽ hiện sau khi chọn đường dẫn)." />
+                    <WrapPanel>
+                        <TextBox x:Name="MoveCodeBox" Width="260" Height="26" Margin="0,0,10,0" />
+                        <Button x:Name="MoveButton" Content="Chuyển vào thùng" Width="140" Height="30" Click="MoveButton_Click" />
+                    </WrapPanel>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="3. Dọn thùng PCTool (XÓA THẬT, không hoàn tác)" Padding="10" Margin="0,0,0,8">
+                <WrapPanel>
+                    <TextBlock Text="Gõ mã XOA THUNG:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <TextBox x:Name="TrashCodeBox" Width="120" Height="26" Margin="0,0,10,0" />
+                    <Button x:Name="TrashButton" Content="Dọn thùng" Width="110" Height="30" Click="TrashButton_Click" />
+                </WrapPanel>
+            </GroupBox>
+
+            <ProgressBar x:Name="Progress" Height="8" IsIndeterminate="False" />
+            <TextBlock x:Name="StatusText" Margin="0,6,0,0" Foreground="Gray" TextWrapping="Wrap" Text="Sẵn sàng." />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
