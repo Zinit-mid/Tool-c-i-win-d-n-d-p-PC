@@ -41,39 +41,39 @@ public partial class MainWindow : Window
     {
         ("Máy tính của bạn", new[]
         {
-            new Tile("🩺", "Quét lỗi máy", "RAM, mạng, khởi động, Windows Update, ổ cứng", "Tổng quan (quét lỗi)"),
-            new Tile("🖥", "Thông số phần cứng", "CPU, RAM, ổ cứng, card đồ họa, pin", "Thông số phần cứng"),
-            new Tile("🧹", "Dọn dẹp rác", "Xóa file tạm, cache, thùng rác", "Dọn dẹp rác"),
-            new Tile("🗂", "Dọn thư mục thông minh", "Tìm file trùng, sắp xếp Downloads", "Dọn thư mục thông minh"),
-            new Tile("🧰", "Gỡ phần mềm cứng đầu", "Gỡ bằng bộ gỡ riêng + dọn thư mục sót", "Gỡ phần mềm cứng đầu"),
-            new Tile("🔐", "File cứng đầu / Quyền", "Lấy lại quyền, chuyển file không xóa được", "File cứng đầu / Quyền"),
-            new Tile("💽", "Phân vùng ổ cứng", "Tách ổ, mở rộng, đổi ký tự ổ", "Phân vùng ổ cứng"),
-            new Tile("⚙", "Thiết lập Windows", "Hiện đuôi file, nguồn điện, giao diện", "Thiết lập Windows"),
+            new Tile("\uE9D9", "Quét lỗi máy", "RAM, mạng, khởi động, Windows Update, ổ cứng", "Tổng quan (quét lỗi)"),
+            new Tile("\uE770", "Thông số phần cứng", "CPU, RAM, ổ cứng, card đồ họa, pin", "Thông số phần cứng"),
+            new Tile("\uE74D", "Dọn dẹp rác", "Xóa file tạm, cache, thùng rác", "Dọn dẹp rác"),
+            new Tile("\uE8B7", "Dọn thư mục thông minh", "Tìm file trùng, sắp xếp Downloads", "Dọn thư mục thông minh"),
+            new Tile("\uE738", "Gỡ phần mềm cứng đầu", "Gỡ bằng bộ gỡ riêng + dọn thư mục sót", "Gỡ phần mềm cứng đầu"),
+            new Tile("\uE72E", "File cứng đầu / Quyền", "Lấy lại quyền, chuyển file không xóa được", "File cứng đầu / Quyền"),
+            new Tile("\uEDA2", "Phân vùng ổ cứng", "Tách ổ, mở rộng, đổi ký tự ổ", "Phân vùng ổ cứng"),
+            new Tile("\uE713", "Thiết lập Windows", "Hiện đuôi file, nguồn điện, giao diện", "Thiết lập Windows"),
         }),
         ("Cài lại Windows", new[]
         {
-            new Tile("🪟", "Tạo USB cài Windows", "Ghi ISO ra USB (xóa USB), có autounattend", "Tạo USB cài Windows"),
-            new Tile("🔄", "Cài lại Win trực tiếp", "Giữ file / xóa sạch, mở công cụ Microsoft", "Cài lại Win trực tiếp"),
-            new Tile("📶", "Sao lưu Driver / Wi-Fi", "Driver, Wi-Fi, Zalo, xem BitLocker", "Sao lưu Driver / Wi-Fi"),
-            new Tile("💾", "Sao lưu / Khôi phục app", "Dữ liệu cá nhân + danh sách app", "Sao lưu / Khôi phục app"),
-            new Tile("♻", "Khôi phục sau cài Win", "Driver, Wi-Fi, app, dữ liệu, Zalo", "Khôi phục sau cài Win"),
+            new Tile("\uE88E", "Tạo USB cài Windows", "Ghi ISO ra USB (xóa USB), có autounattend", "Tạo USB cài Windows"),
+            new Tile("\uE777", "Cài lại Win trực tiếp", "Giữ file / xóa sạch, mở công cụ Microsoft", "Cài lại Win trực tiếp"),
+            new Tile("\uE701", "Sao lưu Driver / Wi-Fi", "Driver, Wi-Fi, Zalo, xem BitLocker", "Sao lưu Driver / Wi-Fi"),
+            new Tile("\uE74E", "Sao lưu / Khôi phục app", "Dữ liệu cá nhân + danh sách app", "Sao lưu / Khôi phục app"),
+            new Tile("\uE7A7", "Khôi phục sau cài Win", "Driver, Wi-Fi, app, dữ liệu, Zalo", "Khôi phục sau cài Win"),
         }),
         ("Cài đặt & tiện ích", new[]
         {
-            new Tile("📦", "Cài nhanh ứng dụng", "Cài hàng loạt bằng winget, thêm app gợi ý", "Cài nhanh ứng dụng"),
-            new Tile("🧩", "Tiện ích khác", "Kiểm tra thiết bị, file ẩn, Kho Driver IRST", "Tiện ích khác"),
+            new Tile("\uE896", "Cài nhanh ứng dụng", "Cài hàng loạt bằng winget, thêm app gợi ý", "Cài nhanh ứng dụng"),
+            new Tile("\uE90F", "Tiện ích khác", "Kiểm tra thiết bị, file ẩn, Kho Driver IRST", "Tiện ích khác"),
         }),
         ("Sửa lỗi & bảo vệ", new[]
         {
-            new Tile("🖨", "Chẩn đoán máy in", "Spooler, hàng đợi, driver, cổng", "Chẩn đoán máy in"),
-            new Tile("📄", "Sửa lỗi Word / Excel", "Mở an toàn, đặt lại mẫu Normal", "Sửa lỗi Word / Excel"),
-            new Tile("⬆", "Windows Update", "Tạm dừng có hẹn giờ tự bật lại", "Windows Update"),
-            new Tile("🛡", "Windows Defender", "Tắt tạm có hẹn giờ tự bật lại", "Windows Defender"),
+            new Tile("\uE749", "Chẩn đoán máy in", "Spooler, hàng đợi, driver, cổng", "Chẩn đoán máy in"),
+            new Tile("\uE70F", "Sửa lỗi Word / Excel", "Mở an toàn, đặt lại mẫu Normal", "Sửa lỗi Word / Excel"),
+            new Tile("\uE895", "Windows Update", "Tạm dừng có hẹn giờ tự bật lại", "Windows Update"),
+            new Tile("\uEA18", "Windows Defender", "Tắt tạm có hẹn giờ tự bật lại", "Windows Defender"),
         }),
         ("PDF", new[]
         {
-            new Tile("📑", "Công cụ PDF", "Gộp, tách, xoay trang, ảnh thành PDF", "Công cụ PDF"),
-            new Tile("👁", "Xem PDF", "Xem nhanh, xuất trang ra ảnh", "Xem PDF"),
+            new Tile("\uE8A5", "Công cụ PDF", "Gộp, tách, xoay trang, ảnh thành PDF", "Công cụ PDF"),
+            new Tile("\uE890", "Xem PDF", "Xem nhanh, xuất trang ra ảnh", "Xem PDF"),
         }),
     };
 
@@ -94,8 +94,8 @@ public partial class MainWindow : Window
                 content.Children.Add(new Border
                 {
                     Width = 46, Height = 46, CornerRadius = new CornerRadius(23), HorizontalAlignment = HorizontalAlignment.Left,
-                    Background = new System.Windows.Media.LinearGradientBrush(System.Windows.Media.Color.FromRgb(0xDB, 0xEA, 0xFE), System.Windows.Media.Color.FromRgb(0xBF, 0xDB, 0xFE), 90),
-                    Child = new TextBlock { Text = t.Icon, FontSize = 24, FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji"), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }
+                    Background = new System.Windows.Media.LinearGradientBrush(System.Windows.Media.Color.FromRgb(0x38, 0xBD, 0xF8), System.Windows.Media.Color.FromRgb(0x25, 0x63, 0xEB), 90),
+                    Child = new TextBlock { Text = t.Icon, FontSize = 22, FontFamily = new System.Windows.Media.FontFamily("Segoe MDL2 Assets"), Foreground = System.Windows.Media.Brushes.White, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }
                 });
                 content.Children.Add(new TextBlock { Text = t.Title, FontWeight = FontWeights.SemiBold, FontSize = 14, Margin = new Thickness(0, 8, 0, 2), TextWrapping = TextWrapping.Wrap, Foreground = (System.Windows.Media.Brush)FindResource("AccentDark") });
                 content.Children.Add(new TextBlock { Text = t.Desc, FontSize = 11.5, Foreground = System.Windows.Media.Brushes.Gray, TextWrapping = TextWrapping.Wrap });

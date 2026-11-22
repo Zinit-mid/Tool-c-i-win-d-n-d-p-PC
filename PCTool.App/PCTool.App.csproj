@@ -7,6 +7,7 @@
     <AssemblyName>PCTool</AssemblyName>
     <RootNamespace>PCTool</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>app.ico</ApplicationIcon>
     <Version>0.1.0</Version>
   </PropertyGroup>
 
@@ -18,6 +19,9 @@
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Resource Include="app.ico" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PCTool.Core\PCTool.Core.csproj" />
   </ItemGroup>
