@@ -55,6 +55,7 @@ public partial class MainWindow : Window
         }),
         ("Cài lại Windows", new[]
         {
+            new Tile("\uE8B9", "Tạo ISO tùy chỉnh", "Gỡ app rác, nhúng driver, đóng ISO mới", "Tạo ISO tùy chỉnh"),
             new Tile("\uE88E", "Tạo USB cài Windows", "Ghi ISO ra USB (xóa USB), có autounattend", "Tạo USB cài Windows"),
             new Tile("\uE777", "Cài lại Win trực tiếp", "Giữ file / xóa sạch, mở công cụ Microsoft", "Cài lại Win trực tiếp"),
             new Tile("\uE701", "Sao lưu Driver / Wi-Fi", "Driver, Wi-Fi, Zalo, xem BitLocker", "Sao lưu Driver / Wi-Fi"),

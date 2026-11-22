@@ -88,6 +88,7 @@
             <TabItem Header="Chương trình khởi động"><views:StartupView /></TabItem>
             <TabItem Header="Dung lượng ổ"><views:DiskUsageView /></TabItem>
             <TabItem Header="Báo cáo &amp; bản quyền"><views:ReportView /></TabItem>
+            <TabItem Header="Tạo ISO tùy chỉnh"><views:IsoBuildView /></TabItem>
             <TabItem Header="Việc sau cài Win"><views:ChecklistView /></TabItem>
             </TabControl>
         </Grid>

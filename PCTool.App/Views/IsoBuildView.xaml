@@ -1,0 +1,63 @@
+<UserControl x:Class="PCTool.Views.IsoBuildView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16">
+            <TextBlock Text="Tạo ISO Windows tùy chỉnh" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Foreground="Gray" Margin="0,4,0,10" TextWrapping="Wrap"
+                       Text="Lấy ISO Windows gốc, gỡ app rác, nhúng driver, chỉnh giao diện rồi đóng thành ISO mới để cài Win. ISO gốc không bị sửa. Làm rất lâu (30-60 phút), cần ổ trống khoảng 3 lần dung lượng ISO và bộ Windows ADK (Deployment Tools) của Microsoft. Cố ý KHÔNG tắt Defender/UAC/Update và không kích hoạt bản quyền. Chưa thử trên Windows thật." />
+
+            <GroupBox Header="1. ISO Windows gốc">
+                <StackPanel>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Chọn file..." Margin="8,0,0,0" Click="BrowseIso_Click" />
+                        <TextBox x:Name="IsoBox" VerticalContentAlignment="Center" />
+                    </DockPanel>
+                    <WrapPanel Margin="0,8,0,0">
+                        <Button Content="Kiểm tra ISO, lấy danh sách phiên bản" Margin="0,0,8,4" Click="Inspect_Click" />
+                        <ComboBox x:Name="EditionBox" Width="320" Margin="0,0,8,4" />
+                    </WrapPanel>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="2. App dựng sẵn cần gỡ khỏi ISO">
+                <StackPanel x:Name="AppPanel" />
+            </GroupBox>
+
+            <GroupBox Header="3. Chỉnh sửa giao diện (cho tài khoản mới)">
+                <StackPanel x:Name="TweakPanel" />
+            </GroupBox>
+
+            <GroupBox Header="4. Driver nhúng thêm (không bắt buộc)">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Chọn thư mục..." Margin="8,0,0,0" Click="BrowseDriver_Click" />
+                    <TextBox x:Name="DriverBox" VerticalContentAlignment="Center" ToolTip="Thư mục chứa các file .inf (có thể lồng nhiều thư mục con). Để trống = không nhúng." />
+                </DockPanel>
+            </GroupBox>
+
+            <GroupBox Header="5. Nơi làm việc và file ISO đầu ra">
+                <StackPanel>
+                    <TextBlock Text="Thư mục làm việc (tạo thư mục con tạm, xóa sau khi xong):" />
+                    <DockPanel Margin="0,2,0,8">
+                        <Button DockPanel.Dock="Right" Content="Chọn thư mục..." Margin="8,0,0,0" Click="BrowseWork_Click" />
+                        <TextBox x:Name="WorkBox" VerticalContentAlignment="Center" />
+                    </DockPanel>
+                    <TextBlock Text="File ISO mới (không ghi đè file có sẵn):" />
+                    <DockPanel Margin="0,2,0,8">
+                        <Button DockPanel.Dock="Right" Content="Chọn nơi lưu..." Margin="8,0,0,0" Click="BrowseOut_Click" />
+                        <TextBox x:Name="OutBox" VerticalContentAlignment="Center" />
+                    </DockPanel>
+                    <TextBlock x:Name="OscText" Foreground="Gray" TextWrapping="Wrap" />
+                </StackPanel>
+            </GroupBox>
+
+            <WrapPanel Margin="0,4,0,8">
+                <Button x:Name="BuildButton" Content="Tạo ISO" Style="{StaticResource PrimaryButton}" Margin="0,0,8,4" Click="Build_Click" />
+                <Button x:Name="StopButton" Content="Dừng" Margin="0,0,16,4" IsEnabled="False" Click="Stop_Click" />
+                <CheckBox x:Name="DryRunBox" Content="Chạy thử (không làm thật)" IsChecked="True" VerticalAlignment="Center" Margin="0,0,0,4" />
+            </WrapPanel>
+            <ProgressBar x:Name="Progress" Height="6" />
+            <TextBlock x:Name="StatusText" Margin="0,6,0,0" Foreground="Gray" TextWrapping="Wrap" Text="Sẵn sàng." />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

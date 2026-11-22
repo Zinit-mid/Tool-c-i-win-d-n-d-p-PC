@@ -17,7 +17,7 @@ internal static class FixUi
         _ => "Không làm được: " + res.Message
     };
 
-    public static async Task<string> RunAsync(FixExecutor executor, IFix fix, bool dry, Action<string> status)
+    public static async Task<string> RunAsync(FixExecutor executor, IFix fix, bool dry, Action<string> status, CancellationToken ct = default)
     {
         if (SettingsService.Default.SafeMode) return "Đã khóa: " + SettingsService.SafeModeMessage;
         var text = "Sẽ làm:\n• " + string.Join("\n• ", fix.Actions) +
@@ -26,7 +26,7 @@ internal static class FixUi
             return "Đã hủy.";
         try
         {
-            var res = await executor.RunAsync(fix, SettingsService.Default.BuildOptions(dry), new Progress<string>(status), CancellationToken.None);
+            var res = await executor.RunAsync(fix, SettingsService.Default.BuildOptions(dry), new Progress<string>(status), ct);
             return Describe(res);
         }
         catch (Exception ex)
