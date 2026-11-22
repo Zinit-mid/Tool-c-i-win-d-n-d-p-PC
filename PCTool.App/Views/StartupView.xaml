@@ -1,0 +1,29 @@
+<UserControl x:Class="PCTool.Views.StartupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel Margin="16">
+        <StackPanel DockPanel.Dock="Top">
+            <TextBlock Text="Chương trình khởi động cùng Windows" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Foreground="Gray" Margin="0,4,0,10" TextWrapping="Wrap"
+                       Text="Tắt bớt app tự chạy khi bật máy để máy khởi động nhanh hơn. Chỉ đổi cờ bật/tắt như Task Manager, không xóa chương trình, bật lại được. Chỉ liệt kê các mục trong khóa Run của registry (chưa có mục trong thư mục Startup)." />
+            <WrapPanel Margin="0,0,0,8">
+                <Button Content="Quét danh sách" Style="{StaticResource PrimaryButton}" Margin="0,0,8,4" Click="Scan_Click" />
+                <Button Content="Tắt mục đã chọn" Margin="0,0,8,4" Click="Disable_Click" />
+                <Button Content="Bật lại mục đã chọn" Margin="0,0,16,4" Click="Enable_Click" />
+                <CheckBox x:Name="DryRunBox" Content="Chạy thử" IsChecked="True" VerticalAlignment="Center" Margin="0,0,0,4" />
+            </WrapPanel>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Bottom">
+            <ProgressBar x:Name="Progress" Height="6" />
+            <TextBlock x:Name="StatusText" Margin="0,6,0,0" Foreground="Gray" TextWrapping="Wrap" Text="Sẵn sàng." />
+        </StackPanel>
+        <DataGrid x:Name="Grid" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" HeadersVisibility="Column" CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Tên" Binding="{Binding Name}" Width="200" />
+                <DataGridTextColumn Header="Trạng thái" Binding="{Binding StateText}" Width="90" />
+                <DataGridTextColumn Header="Áp dụng cho" Binding="{Binding Where}" Width="150" />
+                <DataGridTextColumn Header="Lệnh chạy" Binding="{Binding Command}" Width="*" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

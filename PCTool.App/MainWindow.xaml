@@ -84,13 +84,21 @@
             <TabItem Header="Thông số phần cứng"><views:HardwareView /></TabItem>
             <TabItem Header="Công cụ PDF"><views:PdfToolsView /></TabItem>
             <TabItem Header="Xem PDF"><views:PdfViewerView /></TabItem>
+            <TabItem Header="Quét driver thiếu"><views:DriverScanView /></TabItem>
+            <TabItem Header="Chương trình khởi động"><views:StartupView /></TabItem>
+            <TabItem Header="Dung lượng ổ"><views:DiskUsageView /></TabItem>
+            <TabItem Header="Báo cáo &amp; bản quyền"><views:ReportView /></TabItem>
+            <TabItem Header="Việc sau cài Win"><views:ChecklistView /></TabItem>
             </TabControl>
         </Grid>
 
         <Expander Grid.Row="3" Header="Nhật ký thao tác (bấm để mở)" Margin="8,0,8,6" IsExpanded="False">
+            <DockPanel>
+            <Button DockPanel.Dock="Top" Content="Lưu nhật ký ra file..." HorizontalAlignment="Left" Margin="0,4,0,4" Click="SaveLog_Click" />
             <TextBox x:Name="LogBox" Height="150" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
                      FontFamily="Consolas" FontSize="12" TextWrapping="NoWrap"
                      HorizontalScrollBarVisibility="Auto" />
+            </DockPanel>
         </Expander>
     </Grid>
 </Window>

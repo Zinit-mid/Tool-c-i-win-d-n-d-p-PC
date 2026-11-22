@@ -47,6 +47,9 @@ public partial class MainWindow : Window
             new Tile("\uE8B7", "Dọn thư mục thông minh", "Tìm file trùng, sắp xếp Downloads", "Dọn thư mục thông minh"),
             new Tile("\uE738", "Gỡ phần mềm cứng đầu", "Gỡ bằng bộ gỡ riêng + dọn thư mục sót", "Gỡ phần mềm cứng đầu"),
             new Tile("\uE72E", "File cứng đầu / Quyền", "Lấy lại quyền, chuyển file không xóa được", "File cứng đầu / Quyền"),
+            new Tile("\uE9F9", "Dung lượng ổ", "Thư mục nào chiếm nhiều chỗ (chỉ xem)", "Dung lượng ổ"),
+            new Tile("\uE7E8", "Chương trình khởi động", "Tắt bớt app tự chạy khi bật máy", "Chương trình khởi động"),
+            new Tile("\uE9D2", "Báo cáo & bản quyền", "Xuất báo cáo máy, xem trạng thái bản quyền", "Báo cáo & bản quyền"),
             new Tile("\uEDA2", "Phân vùng ổ cứng", "Tách ổ, mở rộng, đổi ký tự ổ", "Phân vùng ổ cứng"),
             new Tile("\uE713", "Thiết lập Windows", "Hiện đuôi file, nguồn điện, giao diện", "Thiết lập Windows"),
         }),
@@ -56,6 +59,8 @@ public partial class MainWindow : Window
             new Tile("\uE777", "Cài lại Win trực tiếp", "Giữ file / xóa sạch, mở công cụ Microsoft", "Cài lại Win trực tiếp"),
             new Tile("\uE701", "Sao lưu Driver / Wi-Fi", "Driver, Wi-Fi, Zalo, xem BitLocker", "Sao lưu Driver / Wi-Fi"),
             new Tile("\uE74E", "Sao lưu / Khôi phục app", "Dữ liệu cá nhân + danh sách app", "Sao lưu / Khôi phục app"),
+            new Tile("\uE9F3", "Quét driver thiếu", "Tìm thiết bị thiếu driver, cài từ Windows Update", "Quét driver thiếu"),
+            new Tile("\uE73A", "Việc sau cài Win", "Danh sách việc cần làm, tick nhớ lại", "Việc sau cài Win"),
             new Tile("\uE7A7", "Khôi phục sau cài Win", "Driver, Wi-Fi, app, dữ liệu, Zalo", "Khôi phục sau cài Win"),
         }),
         ("Cài đặt & tiện ích", new[]
@@ -72,10 +77,19 @@ public partial class MainWindow : Window
         }),
         ("PDF", new[]
         {
-            new Tile("\uE8A5", "Công cụ PDF", "Gộp, tách, xoay trang, ảnh thành PDF", "Công cụ PDF"),
+            new Tile("\uE8A5", "Công cụ PDF", "Gộp, tách, xoay, ảnh/Word ↔ PDF", "Công cụ PDF"),
             new Tile("\uE890", "Xem PDF", "Xem nhanh, xuất trang ra ảnh", "Xem PDF"),
         }),
     };
+
+    private void SaveLog_Click(object sender, System.Windows.RoutedEventArgs e)
+    {
+        var dlg = new Microsoft.Win32.SaveFileDialog { FileName = $"nhat-ky-pctool-{DateTime.Now:yyyyMMdd-HHmm}.txt", Filter = "Văn bản (*.txt)|*.txt" };
+        if (dlg.ShowDialog() != true) return;
+        try { System.IO.File.WriteAllText(dlg.FileName, LogBox.Text); }
+        catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException)
+        { System.Windows.MessageBox.Show("Không lưu được: " + ex.Message, "PCTool"); }
+    }
 
     private void BuildHome()
     {

@@ -1,0 +1,37 @@
+<UserControl x:Class="PCTool.Views.DriverScanView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16">
+            <TextBlock Text="Quét driver thiếu" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Foreground="Gray" Margin="0,4,0,10" TextWrapping="Wrap"
+                       Text="Cho biết thiết bị nào Windows báo thiếu driver hoặc lỗi, rồi thử cài từ Windows Update. Phần còn thiếu thì mở trang hãng để bạn tự tải. Cần Internet. Chưa thử trên máy thật." />
+
+            <GroupBox Header="1. Quét thiết bị (chỉ đọc)">
+                <StackPanel>
+                    <Button x:Name="ScanButton" Content="Quét thiết bị thiếu driver" HorizontalAlignment="Left" Style="{StaticResource PrimaryButton}" Click="Scan_Click" />
+                    <TextBox x:Name="ListBoxText" Height="150" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="0,8,0,0" />
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="2. Cài driver từ Windows Update">
+                <StackPanel>
+                    <TextBlock Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,6"
+                               Text="Tạo điểm khôi phục rồi tìm và cài driver. Driver đòi chấp nhận điều khoản hoặc cần nhập thông tin sẽ bị bỏ qua. Có thể cần khởi động lại máy." />
+                    <Button x:Name="InstallButton" Content="Tìm và cài driver" HorizontalAlignment="Left" Click="Install_Click" />
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="3. Trang tải driver chính thức (tự tải)">
+                <StackPanel>
+                    <TextBlock x:Name="MakerText" Foreground="Gray" Margin="0,0,0,6" Text="Bấm Quét để biết hãng máy. Trang chung vẫn dùng được." />
+                    <WrapPanel x:Name="VendorPanel" />
+                </StackPanel>
+            </GroupBox>
+
+            <CheckBox x:Name="DryRunBox" Content="Chạy thử (không thay đổi gì)" IsChecked="True" Margin="0,0,0,8" />
+            <ProgressBar x:Name="Progress" Height="6" IsIndeterminate="False" />
+            <TextBlock x:Name="StatusText" Margin="0,6,0,0" Foreground="Gray" TextWrapping="Wrap" Text="Sẵn sàng." />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

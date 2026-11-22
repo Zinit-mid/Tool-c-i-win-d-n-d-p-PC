@@ -57,6 +57,8 @@
                     Click="ImportButton_Click" />
             <Button x:Name="SuggestButton" Content="Thêm app gợi ý" Width="130" Height="40" Margin="0,0,10,6"
                     Click="SuggestButton_Click" />
+            <ComboBox x:Name="ProfileBox" Width="170" Height="40" Margin="0,0,4,6" VerticalContentAlignment="Center" ToolTip="Chọn bộ app rồi bấm Áp dụng" />
+            <Button x:Name="ProfileButton" Content="Áp dụng bộ app" Width="130" Height="40" Margin="0,0,10,6" Click="ProfileButton_Click" />
             <Button x:Name="RestoreButton" Content="Hiện lại mục mặc định" Width="160" Height="40" Margin="0,0,10,6"
                     Click="RestoreButton_Click" />
             <CheckBox x:Name="DryRunBox" Content="Chạy thử (không cài thật)" IsChecked="True"

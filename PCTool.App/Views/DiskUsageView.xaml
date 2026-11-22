@@ -1,0 +1,31 @@
+<UserControl x:Class="PCTool.Views.DiskUsageView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel Margin="16">
+        <StackPanel DockPanel.Dock="Top">
+            <TextBlock Text="Dung lượng ổ" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Foreground="Gray" Margin="0,4,0,10" TextWrapping="Wrap"
+                       Text="Cho biết thư mục nào chiếm nhiều chỗ nhất. Chỉ xem, không xóa gì. Quét cả ổ C có thể mất vài phút. Không tính file hệ thống ẩn như pagefile." />
+            <DockPanel Margin="0,0,0,8">
+                <Button DockPanel.Dock="Right" Content="Chọn thư mục..." Margin="8,0,0,0" Click="Browse_Click" />
+                <TextBox x:Name="PathBox" Text="C:\" VerticalContentAlignment="Center" />
+            </DockPanel>
+            <WrapPanel Margin="0,0,0,8">
+                <Button x:Name="ScanButton" Content="Quét" Style="{StaticResource PrimaryButton}" Margin="0,0,8,4" Click="Scan_Click" />
+                <Button x:Name="StopButton" Content="Dừng" Margin="0,0,8,4" IsEnabled="False" Click="Stop_Click" />
+                <Button Content="Mở thư mục chọn trong Explorer" Margin="0,0,8,4" Click="Open_Click" />
+            </WrapPanel>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Bottom">
+            <ProgressBar x:Name="Progress" Height="6" />
+            <TextBlock x:Name="StatusText" Margin="0,6,0,0" Foreground="Gray" TextWrapping="Wrap" Text="Sẵn sàng." />
+        </StackPanel>
+        <DataGrid x:Name="Grid" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" HeadersVisibility="Column" CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Thư mục" Binding="{Binding Name}" Width="*" />
+                <DataGridTextColumn Header="Dung lượng" Binding="{Binding SizeText}" Width="120" />
+                <DataGridTextColumn Header="Tỉ lệ" Binding="{Binding Percent}" Width="80" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

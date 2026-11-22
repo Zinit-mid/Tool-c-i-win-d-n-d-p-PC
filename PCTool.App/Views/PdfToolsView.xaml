@@ -63,6 +63,17 @@
                 </StackPanel>
             </GroupBox>
 
+            <GroupBox Header="4. Word ↔ PDF (cần cài Microsoft Word)">
+                <StackPanel>
+                    <TextBlock Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,6"
+                               Text="Dùng chính Word trên máy để chuyển. PDF sang Word có thể lệch bố cục, nhất là PDF dạng ảnh quét. Chưa thử trên máy thật." />
+                    <WrapPanel>
+                        <Button Content="Word → PDF..." Margin="0,0,8,4" Click="WordToPdf_Click" />
+                        <Button Content="PDF → Word..." Margin="0,0,8,4" Click="PdfToWord_Click" />
+                    </WrapPanel>
+                </StackPanel>
+            </GroupBox>
+
             <ProgressBar x:Name="Progress" Height="6" IsIndeterminate="False" />
             <TextBox x:Name="ResultBox" Height="110" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True"
                      VerticalScrollBarVisibility="Auto" Margin="0,6,0,0" Text="Sẵn sàng." />

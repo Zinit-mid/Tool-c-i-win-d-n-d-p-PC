@@ -53,6 +53,8 @@ public partial class AppInstallerView : UserControl
         InitializeComponent();
         DryRunBox.IsChecked = SettingsService.Default.DryRunDefault;
         AppsGrid.ItemsSource = _rows;
+        ProfileBox.ItemsSource = AppProfiles.All.Select(x => x.Name).ToList();
+        ProfileBox.SelectedIndex = 0;
         Reload();
     }
 
@@ -199,6 +201,17 @@ public partial class AppInstallerView : UserControl
 
         StatusText.Text = _catalog.Remove(row.Entry.Id).Message;
         Reload();
+    }
+
+    private void ProfileButton_Click(object sender, RoutedEventArgs e)
+    {
+        var prof = AppProfiles.All.FirstOrDefault(x => x.Name == ProfileBox.SelectedItem as string);
+        if (prof == null) return;
+        _catalog.AddSuggested();
+        Reload();
+        int n = 0;
+        foreach (var r in _rows) { r.Selected = prof.Ids.Contains(r.Entry.Id); if (r.Selected) n++; }
+        StatusText.Text = $"Bộ \"{prof.Name}\": đã tick {n}/{prof.Ids.Count} app (app không có trong danh sách sẽ bị bỏ qua). Chưa cài gì, bấm \"Cài các mục đã chọn\".";
     }
 
     private void SuggestButton_Click(object sender, RoutedEventArgs e)

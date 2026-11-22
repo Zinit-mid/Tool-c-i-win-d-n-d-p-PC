@@ -57,6 +57,24 @@ public partial class PdfToolsView : UserControl
     private void MergeAdd_Click(object s, RoutedEventArgs e) { if (PickFiles("PDF (*.pdf)|*.pdf", true) is { } f) foreach (var x in f) MergeList.Items.Add(x); }
     private void MergeUp_Click(object s, RoutedEventArgs e) => Move(MergeList, -1);
     private void MergeDown_Click(object s, RoutedEventArgs e) => Move(MergeList, 1);
+    private async Task WordAsync(string filter, bool toPdf)
+    {
+        if (PickFiles(filter, false) is not { } f) return;
+        var dir = OutDirFor(f[0]);
+        IsEnabled = false; Progress.IsIndeterminate = true; ResultBox.Text = "Đang chuyển bằng Word...";
+        try
+        {
+            var r = toPdf ? await WordConvert.WordToPdfAsync(f[0], dir) : await WordConvert.PdfToWordAsync(f[0], dir);
+            ResultBox.Text = (r.Ok ? "" : "KHÔNG THÀNH CÔNG: ") + r.Message + (r.Outputs is { Count: > 0 } o ? Environment.NewLine + string.Join(Environment.NewLine, o) : "");
+            Logger.Info("Word/PDF: " + r.Message);
+        }
+        catch (Exception ex) { ResultBox.Text = "Lỗi: " + ex.Message; }
+        finally { IsEnabled = true; Progress.IsIndeterminate = false; }
+    }
+
+    private async void WordToPdf_Click(object s, RoutedEventArgs e) => await WordAsync("Word (*.docx;*.doc)|*.docx;*.doc", true);
+    private async void PdfToWord_Click(object s, RoutedEventArgs e) => await WordAsync("PDF (*.pdf)|*.pdf", false);
+
     private void MergeRemove_Click(object s, RoutedEventArgs e) => Remove(MergeList);
 
     private async void Merge_Click(object s, RoutedEventArgs e)
