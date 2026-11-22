@@ -1,0 +1,51 @@
+<UserControl x:Class="PCTool.Views.ToolsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16">
+            <TextBlock Text="Tiện ích khác" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Foreground="Gray" Margin="0,4,0,10" TextWrapping="Wrap"
+                       Text="Các tiện ích nhỏ, an toàn: kiểm tra thiết bị, hiện/ẩn file ẩn, sao chép thư mục không ghi đè." />
+
+            <GroupBox Header="1. Kiểm tra thiết bị (chỉ đọc)" Padding="10" Margin="0,0,0,8">
+                <StackPanel>
+                    <TextBlock Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,6"
+                               Text="Cho biết Windows thấy màn hình/VGA, bàn phím, webcam, micro nào. Chưa thử thiết bị hoạt động thật." />
+                    <Button x:Name="DeviceButton" Content="Kiểm tra thiết bị" Width="160" Height="32" HorizontalAlignment="Left" Click="DeviceButton_Click" />
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="2. File ẩn" Padding="10" Margin="0,0,0,8">
+                <StackPanel>
+                    <TextBlock Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,6"
+                               Text="Chỉ đổi cách Explorer hiển thị, không đổi thuộc tính file nào." />
+                    <WrapPanel>
+                        <Button x:Name="ShowHiddenButton" Content="Hiện file ẩn" Width="140" Height="32" Margin="0,0,10,0" Click="ShowHiddenButton_Click" />
+                        <Button x:Name="HideHiddenButton" Content="Ẩn file ẩn" Width="140" Height="32" Click="HideHiddenButton_Click" />
+                    </WrapPanel>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="3. Sao chép thư mục hàng loạt" Padding="10" Margin="0,0,0,8">
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,6">
+                        <Button DockPanel.Dock="Right" Content="Chọn nguồn..." Width="110" Height="28" Margin="8,0,0,0" Tag="Src" Click="Browse_Click" />
+                        <TextBox x:Name="SrcBox" Height="28" VerticalContentAlignment="Center" />
+                    </DockPanel>
+                    <DockPanel Margin="0,0,0,6">
+                        <Button DockPanel.Dock="Right" Content="Chọn nơi đến..." Width="110" Height="28" Margin="8,0,0,0" Tag="Dst" Click="Browse_Click" />
+                        <TextBox x:Name="DstBox" Height="28" VerticalContentAlignment="Center" />
+                    </DockPanel>
+                    <TextBlock Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,6"
+                               Text="Chép cả thư mục nguồn vào nơi đến (thành thư mục con cùng tên). File đã có ở nơi đến KHÔNG bị ghi đè; không xóa gì." />
+                    <Button x:Name="CopyButton" Content="Sao chép" Width="140" Height="32" HorizontalAlignment="Left" Click="CopyButton_Click" />
+                </StackPanel>
+            </GroupBox>
+
+            <CheckBox x:Name="DryRunBox" Content="Chạy thử (không thay đổi gì)" IsChecked="True" Margin="0,0,0,8" />
+            <ProgressBar x:Name="Progress" Height="8" IsIndeterminate="False" />
+            <TextBlock x:Name="StatusText" Margin="0,6,0,6" Foreground="Gray" TextWrapping="Wrap" Text="Sẵn sàng." />
+            <TextBox x:Name="ResultBox" Height="200" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="8" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
