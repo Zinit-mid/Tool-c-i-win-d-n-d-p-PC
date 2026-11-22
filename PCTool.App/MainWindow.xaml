@@ -60,6 +60,9 @@
             <TabItem Header="Gỡ phần mềm cứng đầu" Padding="12,8">
                 <views:UninstallView />
             </TabItem>
+            <TabItem Header="Thiết lập Windows" Padding="12,8">
+                <views:TweaksView />
+            </TabItem>
             <TabItem Header="Tiện ích khác" Padding="12,8">
                 <views:ToolsView />
             </TabItem>
