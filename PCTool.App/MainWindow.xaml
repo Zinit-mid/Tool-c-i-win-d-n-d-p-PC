@@ -4,7 +4,7 @@
         xmlns:views="clr-namespace:PCTool.Views"
         Title="PCTool - Cài Win &amp; Dọn dẹp PC" Height="720" Width="1180"
         MinHeight="520" MinWidth="860" WindowStartupLocation="CenterScreen"
-        Background="#FFF5F6F8" FontFamily="Segoe UI" FontSize="13">
+        Background="#FFEAF1FB" FontFamily="Segoe UI" FontSize="13">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -18,17 +18,24 @@
                        Text="Chế độ an toàn đang BẬT: mọi thao tác thay đổi máy đều bị khóa. Bạn vẫn quét và xem thông số được." />
         </Border>
 
-        <Border Grid.Row="1" Background="White" BorderBrush="#FFE3E6EA" BorderThickness="0,0,0,1" Padding="14,8">
+        <Border Grid.Row="1" BorderBrush="#FF1E3A8A" BorderThickness="0,0,0,1" Padding="16,10" TextElement.Foreground="White">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#FF1E3A8A" Offset="0" />
+                    <GradientStop Color="#FF2563EB" Offset="0.6" />
+                    <GradientStop Color="#FF38BDF8" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
             <DockPanel LastChildFill="True">
-                <TextBlock DockPanel.Dock="Left" Text="PCTool" FontSize="18" FontWeight="Bold" Foreground="#FF1D4ED8" Margin="0,0,18,0" VerticalAlignment="Center" />
-                <CheckBox x:Name="SafeModeBox" DockPanel.Dock="Left" Content="Chế độ an toàn (chỉ xem, không sửa)"
+                <TextBlock DockPanel.Dock="Left" Text="PCTool" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,18,0" VerticalAlignment="Center" />
+                <CheckBox x:Name="SafeModeBox" DockPanel.Dock="Left" Foreground="White" Content="Chế độ an toàn (chỉ xem, không sửa)"
                           VerticalAlignment="Center" Margin="0,0,16,0" Click="SafeModeBox_Click" />
                 <Button x:Name="CheckUpdateButton" DockPanel.Dock="Right" Content="Kiểm tra cập nhật" Click="CheckUpdateButton_Click" />
                 <Button x:Name="InstallUpdateButton" DockPanel.Dock="Right" Content="Cập nhật ngay" Style="{StaticResource PrimaryButton}"
                         Margin="0,0,8,0" Visibility="Collapsed" Click="InstallUpdateButton_Click" />
                 <ProgressBar x:Name="UpdateProgress" DockPanel.Dock="Right" Width="120" Height="8" Margin="0,0,8,0"
                              Minimum="0" Maximum="100" Visibility="Collapsed" />
-                <TextBlock x:Name="UpdateText" Foreground="Gray" VerticalAlignment="Center" HorizontalAlignment="Right" TextAlignment="Right" Margin="0,0,10,0" />
+                <TextBlock x:Name="UpdateText" Foreground="#FFDCEBFF" VerticalAlignment="Center" HorizontalAlignment="Right" TextAlignment="Right" Margin="0,0,10,0" />
             </DockPanel>
         </Border>
 
@@ -38,10 +45,10 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <Border x:Name="BackBar" Grid.Row="0" Background="White" BorderBrush="#FFE3E6EA" BorderThickness="0,0,0,1" Padding="14,6" Visibility="Collapsed">
+            <Border x:Name="BackBar" Grid.Row="0" Background="#FFD6E6FB" BorderBrush="#FFB6CCF5" BorderThickness="0,0,0,1" Padding="14,6" Visibility="Collapsed">
                 <DockPanel>
                     <Button DockPanel.Dock="Left" Content="←  Trang chủ" Click="Home_Click" Margin="0,0,14,0" />
-                    <TextBlock x:Name="PageTitle" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <TextBlock x:Name="PageTitle" FontSize="16" FontWeight="SemiBold" Foreground="#FF1E3A8A" VerticalAlignment="Center" />
                 </DockPanel>
             </Border>
 

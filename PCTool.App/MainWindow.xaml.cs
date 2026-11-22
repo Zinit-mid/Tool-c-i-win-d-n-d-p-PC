@@ -81,17 +81,23 @@ public partial class MainWindow : Window
     {
         foreach (var (group, tiles) in Catalog)
         {
-            HomePanel.Children.Add(new TextBlock
+            HomePanel.Children.Add(new Border
             {
-                Text = group, FontSize = 15, FontWeight = FontWeights.SemiBold,
-                Foreground = (System.Windows.Media.Brush)FindResource("AccentDark"), Margin = new Thickness(4, 14, 0, 8)
+                BorderBrush = (System.Windows.Media.Brush)FindResource("Accent"), BorderThickness = new Thickness(4, 0, 0, 0),
+                Margin = new Thickness(4, 16, 0, 8), Padding = new Thickness(10, 0, 0, 0),
+                Child = new TextBlock { Text = group, FontSize = 16, FontWeight = FontWeights.Bold, Foreground = (System.Windows.Media.Brush)FindResource("AccentDark") }
             });
             var grid = new System.Windows.Controls.Primitives.UniformGrid { Columns = 4 };
             foreach (var t in tiles)
             {
                 var content = new StackPanel();
-                content.Children.Add(new TextBlock { Text = t.Icon, FontSize = 26, FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji") });
-                content.Children.Add(new TextBlock { Text = t.Title, FontWeight = FontWeights.SemiBold, FontSize = 14, Margin = new Thickness(0, 6, 0, 2), TextWrapping = TextWrapping.Wrap });
+                content.Children.Add(new Border
+                {
+                    Width = 46, Height = 46, CornerRadius = new CornerRadius(23), HorizontalAlignment = HorizontalAlignment.Left,
+                    Background = new System.Windows.Media.LinearGradientBrush(System.Windows.Media.Color.FromRgb(0xDB, 0xEA, 0xFE), System.Windows.Media.Color.FromRgb(0xBF, 0xDB, 0xFE), 90),
+                    Child = new TextBlock { Text = t.Icon, FontSize = 24, FontFamily = new System.Windows.Media.FontFamily("Segoe UI Emoji"), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }
+                });
+                content.Children.Add(new TextBlock { Text = t.Title, FontWeight = FontWeights.SemiBold, FontSize = 14, Margin = new Thickness(0, 8, 0, 2), TextWrapping = TextWrapping.Wrap, Foreground = (System.Windows.Media.Brush)FindResource("AccentDark") });
                 content.Children.Add(new TextBlock { Text = t.Desc, FontSize = 11.5, Foreground = System.Windows.Media.Brushes.Gray, TextWrapping = TextWrapping.Wrap });
                 var btn = new System.Windows.Controls.Button { Content = content, Style = (Style)FindResource("TileButton"), Tag = t.Page };
                 btn.Click += (_, _) => Navigate(t.Page);
