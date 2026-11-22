@@ -21,7 +21,7 @@
         <Border Grid.Row="1" Background="White" BorderBrush="#FFE3E6EA" BorderThickness="0,0,0,1" Padding="14,8">
             <DockPanel LastChildFill="True">
                 <TextBlock DockPanel.Dock="Left" Text="PCTool" FontSize="18" FontWeight="Bold" Foreground="#FF1D4ED8" Margin="0,0,18,0" VerticalAlignment="Center" />
-                <CheckBox x:Name="SafeModeBox" DockPanel.Dock="Left" Content="Chế độ an toàn (máy công ty: chỉ xem, không sửa)"
+                <CheckBox x:Name="SafeModeBox" DockPanel.Dock="Left" Content="Chế độ an toàn (chỉ xem, không sửa)"
                           VerticalAlignment="Center" Margin="0,0,16,0" Click="SafeModeBox_Click" />
                 <Button x:Name="CheckUpdateButton" DockPanel.Dock="Right" Content="Kiểm tra cập nhật" Click="CheckUpdateButton_Click" />
                 <Button x:Name="InstallUpdateButton" DockPanel.Dock="Right" Content="Cập nhật ngay" Style="{StaticResource PrimaryButton}"

@@ -28,6 +28,7 @@ public partial class MainWindow : Window
         SafeBanner.Visibility = settings.SafeMode ? Visibility.Visible : Visibility.Collapsed;
 
         BuildHome();
+        Pages.SelectedIndex = 0; // bắt buộc: thanh tab đã ẩn nên không tự chọn trang chủ
 
         UpdateService.CleanupLeftovers();
         UpdateText.Text = $"Phiên bản {UpdateService.CurrentVersion}";
