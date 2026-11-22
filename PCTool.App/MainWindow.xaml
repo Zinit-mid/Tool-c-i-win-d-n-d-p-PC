@@ -44,13 +44,13 @@
                          SelectionChanged="Nav_SelectionChanged">
                 <ListBoxItem Style="{StaticResource NavHeader}" Content="BẮT ĐẦU" />
                 <ListBoxItem Style="{StaticResource NavItem}" Tag="0" Content="Tổng quan (quét lỗi)" />
-                <ListBoxItem Style="{StaticResource NavHeader}" Content="DỌN DẸP & TỐI ƯU" />
+                <ListBoxItem Style="{StaticResource NavHeader}" Content="DỌN DẸP &amp; TỐI ƯU" />
                 <ListBoxItem Style="{StaticResource NavItem}" Tag="1" Content="Dọn dẹp rác" />
                 <ListBoxItem Style="{StaticResource NavItem}" Tag="2" Content="Dọn thư mục thông minh" />
                 <ListBoxItem Style="{StaticResource NavItem}" Tag="3" Content="Gỡ phần mềm cứng đầu" />
                 <ListBoxItem Style="{StaticResource NavItem}" Tag="4" Content="File cứng đầu / Quyền" />
                 <ListBoxItem Style="{StaticResource NavItem}" Tag="5" Content="Phân vùng ổ cứng" />
-                <ListBoxItem Style="{StaticResource NavHeader}" Content="CÀI ĐẶT & THIẾT LẬP" />
+                <ListBoxItem Style="{StaticResource NavHeader}" Content="CÀI ĐẶT &amp; THIẾT LẬP" />
                 <ListBoxItem Style="{StaticResource NavItem}" Tag="6" Content="Cài nhanh ứng dụng" />
                 <ListBoxItem Style="{StaticResource NavItem}" Tag="7" Content="Thiết lập Windows" />
                 <ListBoxItem Style="{StaticResource NavItem}" Tag="8" Content="Tiện ích khác" />
@@ -60,7 +60,7 @@
                 <ListBoxItem Style="{StaticResource NavItem}" Tag="11" Content="Sao lưu Driver / Wi-Fi" />
                 <ListBoxItem Style="{StaticResource NavItem}" Tag="12" Content="Sao lưu / Khôi phục app" />
                 <ListBoxItem Style="{StaticResource NavItem}" Tag="13" Content="Khôi phục sau cài Win" />
-                <ListBoxItem Style="{StaticResource NavHeader}" Content="SỬA LỖI & BẢO VỆ" />
+                <ListBoxItem Style="{StaticResource NavHeader}" Content="SỬA LỖI &amp; BẢO VỆ" />
                 <ListBoxItem Style="{StaticResource NavItem}" Tag="14" Content="Chẩn đoán máy in" />
                 <ListBoxItem Style="{StaticResource NavItem}" Tag="15" Content="Sửa lỗi Word / Excel" />
                 <ListBoxItem Style="{StaticResource NavItem}" Tag="16" Content="Windows Update" />
