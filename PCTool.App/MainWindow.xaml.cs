@@ -26,9 +26,17 @@ public partial class MainWindow : Window
         SafeModeBox.IsChecked = settings.SafeMode;
         SafeBanner.Visibility = settings.SafeMode ? Visibility.Visible : Visibility.Collapsed;
 
+        Nav.SelectedIndex = 1; // mục đầu tiên (mục 0 là tiêu đề nhóm)
+
         UpdateService.CleanupLeftovers();
         UpdateText.Text = $"Phiên bản {UpdateService.CurrentVersion}";
         Loaded += async (_, _) => await CheckForUpdateAsync(silent: true);
+    }
+
+    private void Nav_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (Nav.SelectedItem is System.Windows.Controls.ListBoxItem { Tag: string tag } && int.TryParse(tag, out var idx) && idx >= 0 && idx < Pages.Items.Count)
+            Pages.SelectedIndex = idx;
     }
 
     private void SafeModeBox_Click(object sender, RoutedEventArgs e)

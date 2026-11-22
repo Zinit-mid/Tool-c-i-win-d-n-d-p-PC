@@ -2,97 +2,106 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:PCTool.Views"
-        Title="PCTool - Cài Win &amp; Dọn dẹp PC" Height="640" Width="980"
-        MinHeight="480" MinWidth="760" WindowStartupLocation="CenterScreen">
+        Title="PCTool - Cài Win &amp; Dọn dẹp PC" Height="720" Width="1180"
+        MinHeight="520" MinWidth="860" WindowStartupLocation="CenterScreen"
+        Background="#FFF5F6F8" FontFamily="Segoe UI" FontSize="13">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="150" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Border x:Name="SafeBanner" Grid.Row="0" Background="#FFFFF4CE" Padding="10,6" Visibility="Collapsed">
+        <Border x:Name="SafeBanner" Grid.Row="0" Background="#FFFFF4CE" Padding="12,7" Visibility="Collapsed">
             <TextBlock TextWrapping="Wrap" FontWeight="SemiBold"
                        Text="Chế độ an toàn đang BẬT: mọi thao tác thay đổi máy đều bị khóa. Bạn vẫn quét và xem thông số được." />
         </Border>
 
-        <DockPanel Grid.Row="1" Margin="10,6,10,0" LastChildFill="True">
-            <CheckBox x:Name="SafeModeBox" DockPanel.Dock="Left" Content="Chế độ an toàn (máy công ty: chỉ xem, không sửa)"
-                      VerticalAlignment="Center" Margin="0,0,16,0" Click="SafeModeBox_Click" />
-            <Button x:Name="CheckUpdateButton" DockPanel.Dock="Right" Content="Kiểm tra cập nhật" Padding="10,3"
-                    Click="CheckUpdateButton_Click" />
-            <Button x:Name="InstallUpdateButton" DockPanel.Dock="Right" Content="Cập nhật ngay" Padding="10,3"
-                    Margin="0,0,8,0" Visibility="Collapsed" Click="InstallUpdateButton_Click" />
-            <ProgressBar x:Name="UpdateProgress" DockPanel.Dock="Right" Width="120" Height="8" Margin="0,0,8,0"
-                         Minimum="0" Maximum="100" Visibility="Collapsed" />
-            <TextBlock x:Name="UpdateText" Foreground="Gray" VerticalAlignment="Center" />
-        </DockPanel>
+        <Border Grid.Row="1" Background="White" BorderBrush="#FFE3E6EA" BorderThickness="0,0,0,1" Padding="14,8">
+            <DockPanel LastChildFill="True">
+                <TextBlock DockPanel.Dock="Left" Text="PCTool" FontSize="18" FontWeight="Bold" Foreground="#FF1D4ED8" Margin="0,0,18,0" VerticalAlignment="Center" />
+                <CheckBox x:Name="SafeModeBox" DockPanel.Dock="Left" Content="Chế độ an toàn (máy công ty: chỉ xem, không sửa)"
+                          VerticalAlignment="Center" Margin="0,0,16,0" Click="SafeModeBox_Click" />
+                <Button x:Name="CheckUpdateButton" DockPanel.Dock="Right" Content="Kiểm tra cập nhật" Click="CheckUpdateButton_Click" />
+                <Button x:Name="InstallUpdateButton" DockPanel.Dock="Right" Content="Cập nhật ngay" Style="{StaticResource PrimaryButton}"
+                        Margin="0,0,8,0" Visibility="Collapsed" Click="InstallUpdateButton_Click" />
+                <ProgressBar x:Name="UpdateProgress" DockPanel.Dock="Right" Width="120" Height="8" Margin="0,0,8,0"
+                             Minimum="0" Maximum="100" Visibility="Collapsed" />
+                <TextBlock x:Name="UpdateText" Foreground="Gray" VerticalAlignment="Center" HorizontalAlignment="Right" TextAlignment="Right" Margin="0,0,10,0" />
+            </DockPanel>
+        </Border>
 
-        <TabControl Grid.Row="2" TabStripPlacement="Left" Margin="6">
-            <TabItem Header="Tổng quan (quét lỗi)" Padding="12,8">
-                <views:OverviewView />
-            </TabItem>
-            <TabItem Header="Dọn dẹp rác" Padding="12,8">
-                <views:CleanupView />
-            </TabItem>
-            <TabItem Header="Cài nhanh ứng dụng" Padding="12,8">
-                <views:AppInstallerView />
-            </TabItem>
-            <TabItem Header="Thông số phần cứng" Padding="12,8">
-                <views:HardwareView />
-            </TabItem>
-            <TabItem Header="Sao lưu Driver / Wi-Fi" Padding="12,8">
-                <views:BackupView />
-            </TabItem>
-            <TabItem Header="Dọn thư mục thông minh" Padding="12,8">
-                <views:FolderCleanupView />
-            </TabItem>
-            <TabItem Header="Sao lưu / Khôi phục app" Padding="12,8">
-                <views:BackupRestoreView />
-            </TabItem>
-            <TabItem Header="Cài lại Win trực tiếp" Padding="12,8">
-                <views:DirectReinstallView />
-            </TabItem>
-            <TabItem Header="Khôi phục sau cài Win" Padding="12,8">
-                <views:RestoreView />
-            </TabItem>
-            <TabItem Header="Gỡ phần mềm cứng đầu" Padding="12,8">
-                <views:UninstallView />
-            </TabItem>
-            <TabItem Header="File cứng đầu / Quyền" Padding="12,8">
-                <views:StubbornView />
-            </TabItem>
-            <TabItem Header="Phân vùng ổ cứng" Padding="12,8">
-                <views:PartitionsView />
-            </TabItem>
-            <TabItem Header="Thiết lập Windows" Padding="12,8">
-                <views:TweaksView />
-            </TabItem>
-            <TabItem Header="Tiện ích khác" Padding="12,8">
-                <views:ToolsView />
-            </TabItem>
-            <TabItem Header="Chẩn đoán máy in" Padding="12,8">
-                <views:PrinterView />
-            </TabItem>
-            <TabItem Header="Sửa lỗi Word / Excel" Padding="12,8">
-                <views:OfficeFixView />
-            </TabItem>
-            <TabItem Header="Windows Update" Padding="12,8">
-                <views:WindowsUpdateView />
-            </TabItem>
-            <TabItem Header="Windows Defender" Padding="12,8">
-                <views:DefenderView />
-            </TabItem>
-            <TabItem Header="Cài lại Windows" Padding="12,8">
-                <views:ReinstallView />
-            </TabItem>
-        </TabControl>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="235" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-        <GroupBox Grid.Row="3" Header="Nhật ký thao tác" Margin="6,0,6,6">
-            <TextBox x:Name="LogBox" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
+            <Border Grid.Column="0" Background="White" BorderBrush="#FFE3E6EA" BorderThickness="0,0,1,0">
+                <ListBox x:Name="Nav" BorderThickness="0" Background="Transparent" Padding="8,8,8,12"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         SelectionChanged="Nav_SelectionChanged">
+                <ListBoxItem Style="{StaticResource NavHeader}" Content="BẮT ĐẦU" />
+                <ListBoxItem Style="{StaticResource NavItem}" Tag="0" Content="Tổng quan (quét lỗi)" />
+                <ListBoxItem Style="{StaticResource NavHeader}" Content="DỌN DẸP & TỐI ƯU" />
+                <ListBoxItem Style="{StaticResource NavItem}" Tag="1" Content="Dọn dẹp rác" />
+                <ListBoxItem Style="{StaticResource NavItem}" Tag="2" Content="Dọn thư mục thông minh" />
+                <ListBoxItem Style="{StaticResource NavItem}" Tag="3" Content="Gỡ phần mềm cứng đầu" />
+                <ListBoxItem Style="{StaticResource NavItem}" Tag="4" Content="File cứng đầu / Quyền" />
+                <ListBoxItem Style="{StaticResource NavItem}" Tag="5" Content="Phân vùng ổ cứng" />
+                <ListBoxItem Style="{StaticResource NavHeader}" Content="CÀI ĐẶT & THIẾT LẬP" />
+                <ListBoxItem Style="{StaticResource NavItem}" Tag="6" Content="Cài nhanh ứng dụng" />
+                <ListBoxItem Style="{StaticResource NavItem}" Tag="7" Content="Thiết lập Windows" />
+                <ListBoxItem Style="{StaticResource NavItem}" Tag="8" Content="Tiện ích khác" />
+                <ListBoxItem Style="{StaticResource NavHeader}" Content="CÀI LẠI WINDOWS" />
+                <ListBoxItem Style="{StaticResource NavItem}" Tag="9" Content="Tạo USB cài Windows" />
+                <ListBoxItem Style="{StaticResource NavItem}" Tag="10" Content="Cài lại Win trực tiếp" />
+                <ListBoxItem Style="{StaticResource NavItem}" Tag="11" Content="Sao lưu Driver / Wi-Fi" />
+                <ListBoxItem Style="{StaticResource NavItem}" Tag="12" Content="Sao lưu / Khôi phục app" />
+                <ListBoxItem Style="{StaticResource NavItem}" Tag="13" Content="Khôi phục sau cài Win" />
+                <ListBoxItem Style="{StaticResource NavHeader}" Content="SỬA LỖI & BẢO VỆ" />
+                <ListBoxItem Style="{StaticResource NavItem}" Tag="14" Content="Chẩn đoán máy in" />
+                <ListBoxItem Style="{StaticResource NavItem}" Tag="15" Content="Sửa lỗi Word / Excel" />
+                <ListBoxItem Style="{StaticResource NavItem}" Tag="16" Content="Windows Update" />
+                <ListBoxItem Style="{StaticResource NavItem}" Tag="17" Content="Windows Defender" />
+                <ListBoxItem Style="{StaticResource NavHeader}" Content="MÁY TÍNH" />
+                <ListBoxItem Style="{StaticResource NavItem}" Tag="18" Content="Thông số phần cứng" />
+                </ListBox>
+            </Border>
+
+            <TabControl x:Name="Pages" Grid.Column="1" Margin="8,8,8,4" Background="Transparent" BorderThickness="0" Padding="0">
+                <TabControl.Template>
+                    <ControlTemplate TargetType="TabControl">
+                        <ContentPresenter ContentSource="SelectedContent" />
+                    </ControlTemplate>
+                </TabControl.Template>
+            <TabItem Header="Tổng quan (quét lỗi)"><views:OverviewView /></TabItem>
+            <TabItem Header="Dọn dẹp rác"><views:CleanupView /></TabItem>
+            <TabItem Header="Dọn thư mục thông minh"><views:FolderCleanupView /></TabItem>
+            <TabItem Header="Gỡ phần mềm cứng đầu"><views:UninstallView /></TabItem>
+            <TabItem Header="File cứng đầu / Quyền"><views:StubbornView /></TabItem>
+            <TabItem Header="Phân vùng ổ cứng"><views:PartitionsView /></TabItem>
+            <TabItem Header="Cài nhanh ứng dụng"><views:AppInstallerView /></TabItem>
+            <TabItem Header="Thiết lập Windows"><views:TweaksView /></TabItem>
+            <TabItem Header="Tiện ích khác"><views:ToolsView /></TabItem>
+            <TabItem Header="Tạo USB cài Windows"><views:ReinstallView /></TabItem>
+            <TabItem Header="Cài lại Win trực tiếp"><views:DirectReinstallView /></TabItem>
+            <TabItem Header="Sao lưu Driver / Wi-Fi"><views:BackupView /></TabItem>
+            <TabItem Header="Sao lưu / Khôi phục app"><views:BackupRestoreView /></TabItem>
+            <TabItem Header="Khôi phục sau cài Win"><views:RestoreView /></TabItem>
+            <TabItem Header="Chẩn đoán máy in"><views:PrinterView /></TabItem>
+            <TabItem Header="Sửa lỗi Word / Excel"><views:OfficeFixView /></TabItem>
+            <TabItem Header="Windows Update"><views:WindowsUpdateView /></TabItem>
+            <TabItem Header="Windows Defender"><views:DefenderView /></TabItem>
+            <TabItem Header="Thông số phần cứng"><views:HardwareView /></TabItem>
+            </TabControl>
+        </Grid>
+
+        <Expander Grid.Row="3" Header="Nhật ký thao tác (bấm để mở)" Margin="8,0,8,6" IsExpanded="False">
+            <TextBox x:Name="LogBox" Height="150" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
                      FontFamily="Consolas" FontSize="12" TextWrapping="NoWrap"
                      HorizontalScrollBarVisibility="Auto" />
-        </GroupBox>
+        </Expander>
     </Grid>
 </Window>
