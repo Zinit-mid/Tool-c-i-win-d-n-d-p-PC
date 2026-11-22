@@ -1,0 +1,62 @@
+<UserControl x:Class="PCTool.Views.PartitionsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16">
+            <TextBlock Text="Quản lý phân vùng ổ" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Foreground="OrangeRed" Margin="0,4,0,10" TextWrapping="Wrap"
+                       Text="CẨN THẬN: sai thao tác phân vùng có thể mất dữ liệu và không hoàn tác được. Hãy sao lưu trước. PCTool KHÔNG có nút xóa phân vùng hay format ổ có sẵn; chưa từng chạy thử trên máy thật, hãy thử trên máy ảo hoặc ổ không quan trọng trước." />
+
+            <WrapPanel Margin="0,0,0,8">
+                <Button x:Name="ScanButton" Content="Đọc danh sách ổ" Width="150" Height="30" Margin="0,0,10,0" Click="ScanButton_Click" />
+                <CheckBox x:Name="DryRunBox" Content="Chạy thử (không thay đổi gì)" IsChecked="True" VerticalAlignment="Center" />
+            </WrapPanel>
+            <TextBox x:Name="ListBox" Height="110" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="6" Margin="0,0,0,8" />
+
+            <GroupBox Header="1. Tách ổ: thu nhỏ một ổ và tạo ổ mới trống" Padding="10" Margin="0,0,0,8">
+                <StackPanel>
+                    <WrapPanel Margin="0,0,0,6">
+                        <TextBlock Text="Ổ nguồn:" VerticalAlignment="Center" Margin="0,0,4,0" />
+                        <TextBox x:Name="SrcBox" Width="40" Height="26" Margin="0,0,12,0" MaxLength="1" />
+                        <TextBlock Text="Dung lượng tách (MB):" VerticalAlignment="Center" Margin="0,0,4,0" />
+                        <TextBox x:Name="MbBox" Width="90" Height="26" Margin="0,0,12,0" />
+                        <TextBlock Text="Ký tự ổ mới:" VerticalAlignment="Center" Margin="0,0,4,0" />
+                        <TextBox x:Name="NewBox" Width="40" Height="26" Margin="0,0,12,0" MaxLength="1" />
+                        <TextBlock Text="Tên ổ mới:" VerticalAlignment="Center" Margin="0,0,4,0" />
+                        <TextBox x:Name="LabelBox" Width="140" Height="26" Text="DATA_NEW" />
+                    </WrapPanel>
+                    <WrapPanel>
+                        <TextBlock Text="Gõ mã xác nhận (CHIA + ký tự ổ nguồn, ví dụ CHIA D):" VerticalAlignment="Center" Margin="0,0,6,0" />
+                        <TextBox x:Name="ShrinkCodeBox" Width="100" Height="26" Margin="0,0,10,0" />
+                        <Button x:Name="ShrinkButton" Content="Tách ổ" Width="100" Height="30" Click="ShrinkButton_Click" />
+                    </WrapPanel>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="2. Mở rộng ổ vào vùng trống liền kề phía sau (không xóa gì)" Padding="10" Margin="0,0,0,8">
+                <WrapPanel>
+                    <TextBlock Text="Ổ:" VerticalAlignment="Center" Margin="0,0,4,0" />
+                    <TextBox x:Name="ExtBox" Width="40" Height="26" Margin="0,0,12,0" MaxLength="1" />
+                    <TextBlock Text="Mã (MO RONG + ký tự ổ):" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <TextBox x:Name="ExtCodeBox" Width="100" Height="26" Margin="0,0,10,0" />
+                    <Button x:Name="ExtButton" Content="Mở rộng" Width="100" Height="30" Click="ExtButton_Click" />
+                </WrapPanel>
+            </GroupBox>
+
+            <GroupBox Header="3. Đổi ký tự ổ dữ liệu (không đổi được ổ Windows)" Padding="10" Margin="0,0,0,8">
+                <WrapPanel>
+                    <TextBlock Text="Ổ:" VerticalAlignment="Center" Margin="0,0,4,0" />
+                    <TextBox x:Name="OldBox" Width="40" Height="26" Margin="0,0,12,0" MaxLength="1" />
+                    <TextBlock Text="Thành:" VerticalAlignment="Center" Margin="0,0,4,0" />
+                    <TextBox x:Name="ToBox" Width="40" Height="26" Margin="0,0,12,0" MaxLength="1" />
+                    <TextBlock Text="Mã (DOI + ký tự ổ cũ):" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <TextBox x:Name="LetterCodeBox" Width="100" Height="26" Margin="0,0,10,0" />
+                    <Button x:Name="LetterButton" Content="Đổi ký tự" Width="100" Height="30" Click="LetterButton_Click" />
+                </WrapPanel>
+            </GroupBox>
+
+            <ProgressBar x:Name="Progress" Height="8" IsIndeterminate="False" />
+            <TextBlock x:Name="StatusText" Margin="0,6,0,0" Foreground="Gray" TextWrapping="Wrap" Text="Hãy bấm Đọc danh sách ổ trước." />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

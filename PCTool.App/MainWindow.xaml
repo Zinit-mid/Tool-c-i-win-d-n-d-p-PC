@@ -60,6 +60,9 @@
             <TabItem Header="Gỡ phần mềm cứng đầu" Padding="12,8">
                 <views:UninstallView />
             </TabItem>
+            <TabItem Header="Phân vùng ổ cứng" Padding="12,8">
+                <views:PartitionsView />
+            </TabItem>
             <TabItem Header="Thiết lập Windows" Padding="12,8">
                 <views:TweaksView />
             </TabItem>
