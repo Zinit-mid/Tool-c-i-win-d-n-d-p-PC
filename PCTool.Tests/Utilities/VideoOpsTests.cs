@@ -72,8 +72,8 @@ public class VideoOpsTests
     [Fact]
     public void SortByName_IsNatural_NumbersByValue()
     {
-        var sorted = VideoInfo.SortByName(new[] { @"C:.mp4", @"C:.mp4", @"C:.mp4", @"C:\Tap 9.mp4", @"C:\Tap 10.mp4", @"C:\Tap 09b.mp4" });
-        Assert.Equal(new[] { "1.mp4", "2.mp4", "10.mp4", "Tap 09b.mp4", "Tap 9.mp4", "Tap 10.mp4" }, sorted.Select(Path.GetFileName));
+        var sorted = VideoInfo.SortByName(new[] { "10.mp4", "2.mp4", "1.mp4", "Tap 9.mp4", "Tap 10.mp4", "Tap 09b.mp4" }.Select(n => Path.Combine("C:", "v", n)));
+        Assert.Equal(new[] { "1.mp4", "2.mp4", "10.mp4", "Tap 9.mp4", "Tap 09b.mp4", "Tap 10.mp4" }, sorted.Select(f => Path.GetFileName(f)).ToArray());
     }
 
     [Fact]
