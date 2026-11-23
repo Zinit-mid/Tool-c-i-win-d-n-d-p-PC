@@ -61,6 +61,7 @@ public sealed class AppCatalog
         S("brave", "Brave", "Brave.Brave", "Trình duyệt"),
         S("klite", "K-Lite Codec Pack", "CodecGuide.K-LiteCodecPack.Standard", "Xem phim"),
         S("vlc", "VLC", "VideoLAN.VLC", "Xem phim"),
+        S("videomass", "Videomass (cắt/ghép video)", "GianlucaPernigotto.Videomass", "Cắt ghép video"),
         S("foxit", "Foxit Reader", "Foxit.FoxitReader", "Đọc PDF"),
         S("sumatrapdf", "SumatraPDF", "SumatraPDF.SumatraPDF", "Đọc PDF"),
         S("ultraviewer", "UltraViewer", "DucFabulous.UltraViewer", "Điều khiển từ xa"),

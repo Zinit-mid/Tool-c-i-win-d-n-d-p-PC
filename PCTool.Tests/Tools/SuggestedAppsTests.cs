@@ -94,3 +94,66 @@ public class SuggestedAppsTests
         Assert.Throws<ArgumentException>(() => IntelRstPages.Open("http://www.intel.com/x", _ => { }));
     }
 }
+
+public class VideoToolsAndShortcutTests
+{
+    [Fact]
+    public void VideoToolPages_OnlyFixedHttpsUrls()
+    {
+        Assert.All(VideoToolPages.All, p => Assert.StartsWith("https://", p.Url));
+        Assert.True(VideoToolPages.IsAllowed(VideoToolPages.All[0].Url));
+        Assert.False(VideoToolPages.IsAllowed("https://evil.example/x"));
+        Assert.Throws<ArgumentException>(() => VideoToolPages.Open("https://evil.example/x", _ => { }));
+        Assert.Contains(VideoToolPages.All, p => p.Title.Contains("CHƯA kiểm chứng"));
+    }
+
+    [Fact]
+    public void Videomass_IsInSuggested_WithValidWingetId()
+    {
+        var v = AppCatalog.Suggested.Single(e => e.Id == "videomass");
+        Assert.Equal("GianlucaPernigotto.Videomass", v.WingetId);
+        Assert.Empty(AppEntryValidator.Validate(v));
+    }
+
+    private sealed class NoRun : IProcessRunner
+    {
+        public Task<ProcessResult> RunAsync(string f, IReadOnlyList<string> a, int t, CancellationToken ct) => Task.FromResult(new ProcessResult(0, "", ""));
+    }
+
+    [Fact]
+    public async Task Shortcut_IsCreatedOnPublicDesktopToo_AndMessageShowsFullPaths()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "pct-" + Guid.NewGuid().ToString("N"));
+        var desk = Path.Combine(root, "user"); var pub = Path.Combine(root, "public");
+        try
+        {
+            var entry = new AppEntry { Id = "facebook", Name = "Facebook", Kind = AppKind.WebShortcut, Url = "https://www.facebook.com" };
+            var fix = new InstallAppFix(entry, new NoRun(), desk, _ => { }, new[] { pub });
+            var res = await fix.ExecuteAsync(new Progress<string>(), CancellationToken.None);
+            Assert.True(res.IsSuccess);
+            Assert.True(File.Exists(Path.Combine(desk, "Facebook.url")));
+            Assert.True(File.Exists(Path.Combine(pub, "Facebook.url")));
+            Assert.Contains(desk, res.Message);
+            Assert.Contains(pub, res.Message);
+        }
+        finally { try { Directory.Delete(root, true); } catch (IOException) { } }
+    }
+
+    [Fact]
+    public async Task Shortcut_PublicDesktopFailure_DoesNotFailTheFix()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "pct-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var blocker = Path.Combine(root, "file.txt");
+        File.WriteAllText(blocker, "x");
+        try
+        {
+            var entry = new AppEntry { Id = "facebook", Name = "Facebook", Kind = AppKind.WebShortcut, Url = "https://www.facebook.com" };
+            var fix = new InstallAppFix(entry, new NoRun(), Path.Combine(root, "user"), _ => { }, new[] { Path.Combine(blocker, "sub") });
+            var res = await fix.ExecuteAsync(new Progress<string>(), CancellationToken.None);
+            Assert.True(res.IsSuccess);
+            Assert.True(File.Exists(Path.Combine(root, "user", "Facebook.url")));
+        }
+        finally { try { Directory.Delete(root, true); } catch (IOException) { } }
+    }
+}

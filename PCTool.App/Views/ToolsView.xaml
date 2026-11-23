@@ -50,6 +50,14 @@
                 </StackPanel>
             </GroupBox>
 
+            <GroupBox Header="5. Cắt / ghép video (FFmpeg)" Padding="10" Margin="0,0,0,8">
+                <StackPanel>
+                    <TextBlock Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,6"
+                               Text="PCTool chỉ MỞ trang web, không tự tải hay chạy file nào. Videomass cũng có trong mục Cài nhanh ứng dụng (nhóm Cắt ghép video). Mục ghi CHƯA kiểm chứng là bản tôi chưa xác minh được an toàn: tự cân nhắc, quét virus trước khi chạy." />
+                    <WrapPanel x:Name="VideoPanel" />
+                </StackPanel>
+            </GroupBox>
+
             <CheckBox x:Name="DryRunBox" Content="Chạy thử (không thay đổi gì)" IsChecked="True" Margin="0,0,0,8" />
             <ProgressBar x:Name="Progress" Height="8" IsIndeterminate="False" />
             <TextBlock x:Name="StatusText" Margin="0,6,0,6" Foreground="Gray" TextWrapping="Wrap" Text="Sẵn sàng." />

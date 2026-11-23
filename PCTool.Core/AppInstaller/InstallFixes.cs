@@ -17,9 +17,12 @@ public sealed class InstallAppFix : IFix
     private readonly IProcessRunner _runner;
     private readonly string _desktopDir;
     private readonly Action<string> _openUrl;
+    private readonly IReadOnlyList<string> _extraDirs;
 
-    public InstallAppFix(AppEntry entry, IProcessRunner runner, string desktopDir, Action<string> openUrl)
+    /// <param name="extraDirs">Thư mục Desktop phụ (ví dụ Desktop chung của mọi tài khoản) để lối tắt vẫn thấy được khi Desktop riêng khác chỗ bạn nhìn.</param>
+    public InstallAppFix(AppEntry entry, IProcessRunner runner, string desktopDir, Action<string> openUrl, IReadOnlyList<string>? extraDirs = null)
     {
+        _extraDirs = extraDirs ?? Array.Empty<string>();
         var errors = AppEntryValidator.Validate(entry);   // kiểm tra lần nữa trước khi chạy quyền Admin
         if (errors.Count > 0) throw new ArgumentException("Mục cài đặt không hợp lệ: " + errors[0], nameof(entry));
         _entry = entry.Clone();
@@ -124,17 +127,43 @@ public sealed class InstallAppFix : IFix
     private FixResult CreateShortcut()
     {
         var path = ShortcutPath();
+        var where = new List<string>();
+        bool existed = File.Exists(path);
         try
         {
-            if (File.Exists(path)) return FixResult.Succeeded($"Lối tắt {_entry.Name} đã có trên Desktop.");
-            Directory.CreateDirectory(_desktopDir);
-            File.WriteAllText(path, $"[InternetShortcut]\r\nURL={_entry.Url}\r\n");
-            return FixResult.Succeeded($"Đã tạo lối tắt {_entry.Name} trên Desktop.");
+            if (!existed)
+            {
+                Directory.CreateDirectory(_desktopDir);
+                File.WriteAllText(path, $"[InternetShortcut]\r\nURL={_entry.Url}\r\n");
+            }
+
+            where.Add(path);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             return FixResult.Failed("Không tạo được lối tắt: " + ex.Message);
         }
+
+        // Desktop phụ: lỗi ở đây không làm hỏng cả việc (có thể không đủ quyền), chỉ bỏ qua.
+        foreach (var dir in _extraDirs.Where(d => !string.IsNullOrWhiteSpace(d)).Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            var extra = Path.Combine(dir, ShortcutFileName());
+            if (string.Equals(Path.GetFullPath(extra), Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase)) continue;
+            try
+            {
+                if (!File.Exists(extra))
+                {
+                    Directory.CreateDirectory(dir);
+                    File.WriteAllText(extra, $"[InternetShortcut]\r\nURL={_entry.Url}\r\n");
+                }
+
+                where.Add(extra);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        }
+
+        return FixResult.Succeeded((existed && where.Count == 1 ? $"Lối tắt {_entry.Name} đã có tại: " : $"Đã tạo lối tắt {_entry.Name} tại: ")
+                                   + string.Join(" ; ", where) + ". Nếu không thấy trên màn hình nền, bấm \"Mở thư mục Desktop\" hoặc bấm F5 trên Desktop.");
     }
 
     private FixResult OpenDownloadPage()
