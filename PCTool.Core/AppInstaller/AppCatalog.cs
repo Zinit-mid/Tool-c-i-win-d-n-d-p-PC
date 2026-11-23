@@ -139,6 +139,27 @@ public sealed class AppCatalog
         };
     }
 
+    /// <summary>
+    /// Như <see cref="Load"/> nhưng thêm sẵn toàn bộ app gợi ý (chưa có trong danh sách và chưa bị ẩn) để giao diện hiện đủ mà
+    /// không cần bấm nút. Không ghi file. Mục gợi ý coi như mục mặc định: bấm ẩn thì chỉ ẩn, "hiện lại mục mặc định" để hiện lại.
+    /// </summary>
+    public CatalogState LoadAll()
+    {
+        var s = Load();
+        var have = new HashSet<string>(s.Items.Select(i => i.Id), StringComparer.Ordinal);
+        var hidden = new HashSet<string>(s.HiddenBuiltIn, StringComparer.Ordinal);
+        var items = s.Items.ToList();
+        foreach (var e in Suggested)
+        {
+            if (have.Contains(e.Id) || hidden.Contains(e.Id)) continue;
+            var c = e.Clone();
+            c.BuiltIn = true;
+            items.Add(c);
+        }
+
+        return new CatalogState { Items = items, HiddenBuiltIn = s.HiddenBuiltIn, ReadOnly = s.ReadOnly, Warnings = s.Warnings };
+    }
+
     // ------------------------------------------------------------------ sửa
 
     public CatalogOpResult AddOrUpdate(AppEntry entry)
@@ -160,7 +181,7 @@ public sealed class AppCatalog
     /// <summary>Mục tự thêm: xóa hẳn. Mục mặc định: chỉ ẩn (không xóa được).</summary>
     public CatalogOpResult Remove(string id)
     {
-        bool isDefault = Defaults.Any(d => d.Id == id);
+        bool isDefault = Defaults.Any(d => d.Id == id) || Suggested.Any(d => d.Id == id);
         return Mutate(file =>
         {
             file.Items.RemoveAll(i => i.Id == id);

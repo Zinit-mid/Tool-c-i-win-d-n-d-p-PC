@@ -32,6 +32,55 @@ public class SuggestedAppsTests
         finally { try { Directory.Delete(Path.GetDirectoryName(path)!, true); } catch { } }
     }
 
+    private static AppCatalog Temp(out string dir)
+    {
+        dir = Path.Combine(Path.GetTempPath(), "pct-" + Guid.NewGuid().ToString("N"));
+        return new AppCatalog(Path.Combine(dir, "apps.user.json"));
+    }
+
+    [Fact]
+    public void LoadAll_ShowsEverything_WithoutWritingFile()
+    {
+        var c = Temp(out var dir);
+        try
+        {
+            var s = c.LoadAll();
+            Assert.Equal(3 + AppCatalog.Suggested.Count, s.Items.Count);
+            Assert.Equal("zalo", s.Items[0].Id);
+            Assert.Equal(s.Items.Count, s.Items.Select(i => i.Id).Distinct().Count());
+            Assert.False(Directory.Exists(dir));
+        }
+        finally { try { Directory.Delete(dir, true); } catch { } }
+    }
+
+    [Fact]
+    public void LoadAll_AfterAddSuggested_NoDuplicates()
+    {
+        var c = Temp(out var dir);
+        try
+        {
+            c.AddSuggested();
+            var s = c.LoadAll();
+            Assert.Equal(3 + AppCatalog.Suggested.Count, s.Items.Count);
+            Assert.Equal(s.Items.Count, s.Items.Select(i => i.Id).Distinct().Count());
+        }
+        finally { try { Directory.Delete(dir, true); } catch { } }
+    }
+
+    [Fact]
+    public void LoadAll_HideSuggested_ThenRestore()
+    {
+        var c = Temp(out var dir);
+        try
+        {
+            Assert.True(c.Remove("vlc").Ok);
+            Assert.DoesNotContain(c.LoadAll().Items, i => i.Id == "vlc");
+            c.RestoreHiddenDefaults();
+            Assert.Contains(c.LoadAll().Items, i => i.Id == "vlc");
+        }
+        finally { try { Directory.Delete(dir, true); } catch { } }
+    }
+
     [Fact]
     public void IntelRst_OnlyWhitelistedHttpsIntel()
     {
