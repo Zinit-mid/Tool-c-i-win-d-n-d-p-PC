@@ -74,8 +74,11 @@ public partial class OcrView : UserControl
         if (CreateEngine(tag) != null) { StatusText.Text = "Gói ngôn ngữ này đã có sẵn."; return; }
         var executor = new FixExecutor(new RestorePointService());
         StatusText.Text = "Đang xử lý...";
-        StatusText.Text = await FixUi.RunAsync(executor, new OcrLanguageInstallFix(tag), DryRunBox.IsChecked == true, m => StatusText.Text = m);
+        var msg = await FixUi.RunAsync(executor, new OcrLanguageInstallFix(tag), DryRunBox.IsChecked == true, m => StatusText.Text = m);
         RefreshLanguages();
+        if (CreateEngine(tag) == null && DryRunBox.IsChecked != true)
+            msg += "\nNếu ô ngôn ngữ vẫn ghi \"chưa cài gói\": khởi động lại máy rồi mở lại PCTool. Nếu vẫn vậy, mở \"Nhật ký thao tác\" ở dưới và gửi tôi dòng báo lỗi.";
+        StatusText.Text = msg;
     }
 
     private static async Task<SoftwareBitmap> LoadBitmapAsync(IRandomAccessStream stream)

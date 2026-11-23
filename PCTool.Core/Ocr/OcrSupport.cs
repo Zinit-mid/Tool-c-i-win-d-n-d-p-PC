@@ -78,25 +78,48 @@ public sealed class OcrLanguageInstallFix : IFix
 
     public string InstallScript() => $$"""
 $ErrorActionPreference = 'Stop'
-Add-WindowsCapability -Online -Name '{{_lang.Capability}}' | Out-Null
+$r = Add-WindowsCapability -Online -Name '{{_lang.Capability}}'
+$s = (Get-WindowsCapability -Online -Name '{{_lang.Capability}}').State
+"STATE=$s;RESTART=$($r.RestartNeeded)"
 """;
 
     public string CheckScript() => $$"""
 [string](Get-WindowsCapability -Online -Name '{{_lang.Capability}}' -ErrorAction Stop).State
 """;
 
+    /// <summary>Đọc dòng "STATE=...;RESTART=..." do InstallScript in ra.</summary>
+    public static (string State, bool Restart) ParseInstallOutput(string output)
+    {
+        string state = "", restart = "";
+        foreach (var part in (output ?? "").Split('\r', '\n', ';', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var t = part.Trim();
+            if (t.StartsWith("STATE=", StringComparison.Ordinal)) state = t[6..].Trim();
+            else if (t.StartsWith("RESTART=", StringComparison.Ordinal)) restart = t[8..].Trim();
+        }
+
+        return (state, string.Equals(restart, "True", StringComparison.OrdinalIgnoreCase));
+    }
+
     public async Task<FixResult> ExecuteAsync(IProgress<string> progress, CancellationToken ct)
     {
         progress.Report("Đang cài gói đọc chữ, có thể mất vài phút...");
         var r = await _run(InstallScript(), ct);
-        return r.ExitCode == 0
-            ? FixResult.Succeeded($"Đã gửi lệnh cài gói đọc chữ {_lang.Title}.")
-            : FixResult.Failed(string.IsNullOrWhiteSpace(r.Error) ? "Windows không cài được gói ngôn ngữ (kiểm tra Internet/Windows Update)." : r.Error.Trim());
+        if (r.ExitCode != 0)
+            return FixResult.Failed(string.IsNullOrWhiteSpace(r.Error)
+                ? "Windows không cài được gói ngôn ngữ (kiểm tra Internet/Windows Update)."
+                : r.Error.Trim());
+
+        var (state, restart) = ParseInstallOutput(r.Output);
+        if (state == "Installed" && !restart) return FixResult.Succeeded($"Đã cài gói đọc chữ {_lang.Title}.");
+        if (state is "Installed" or "InstallPending" || restart)
+            return FixResult.Succeeded($"Đã cài gói đọc chữ {_lang.Title} nhưng Windows cần khởi động lại máy rồi mới dùng được.");
+        return FixResult.Failed($"Windows báo trạng thái gói là \"{(state.Length == 0 ? "không rõ" : state)}\" (chưa cài). Kiểm tra Internet, Windows Update đang bật, rồi thử lại.");
     }
 
     public async Task<bool> VerifyAsync(CancellationToken ct)
     {
         var r = await _run(CheckScript(), ct);
-        return r.ExitCode == 0 && r.Output.Trim() == "Installed";
+        return r.ExitCode == 0 && r.Output.Trim() is "Installed" or "InstallPending";
     }
 }

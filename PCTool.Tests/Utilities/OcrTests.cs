@@ -70,24 +70,55 @@ public class OcrTests
     }
 
     [Fact]
-    public async Task InstallFix_OnlyKnownLanguage_AndRunsFixedScript()
+    public void InstallFix_OnlyKnownLanguage_AndFixedScript()
     {
         Assert.Throws<ArgumentException>(() => new OcrLanguageInstallFix("xx'; calc"));
-        var scripts = new List<string>();
-        ScriptRunner run = (s, _) => { scripts.Add(s); return Task.FromResult(new PowerShellResult(0, s.Contains("Get-WindowsCapability") ? "Installed" : "", "")); };
-        var fix = new OcrLanguageInstallFix("vi", run);
+        var fix = new OcrLanguageInstallFix("vi");
         Assert.Contains("Language.OCR~~~vi-VN~0.0.1.0", fix.InstallScript());
         Assert.False(fix.RequiresRestorePoint);
-        var res = await fix.ExecuteAsync(new Progress<string>(), CancellationToken.None);
-        Assert.True(res.IsSuccess);
-        Assert.True(await fix.VerifyAsync(CancellationToken.None));
-        Assert.Equal(2, scripts.Count);
     }
 
     [Fact]
-    public async Task InstallFix_NotInstalledAfter_FailsVerify()
+    public void ParseInstallOutput_ReadsStateAndRestart()
     {
-        ScriptRunner run = (_, _) => Task.FromResult(new PowerShellResult(0, "NotPresent", ""));
-        Assert.False(await new OcrLanguageInstallFix("en", run).VerifyAsync(CancellationToken.None));
+        Assert.Equal(("Installed", false), OcrLanguageInstallFix.ParseInstallOutput("STATE=Installed;RESTART=False"));
+        Assert.Equal(("InstallPending", true), OcrLanguageInstallFix.ParseInstallOutput("x\r\nSTATE=InstallPending;RESTART=True\r\n"));
+        Assert.Equal(("", false), OcrLanguageInstallFix.ParseInstallOutput(""));
+    }
+
+    private static async Task<(FixResultLite R, bool V)> RunFix(string installOut, string checkOut)
+    {
+        ScriptRunner run = (s, _) => Task.FromResult(new PowerShellResult(0, s.Contains("Add-WindowsCapability") ? installOut : checkOut, ""));
+        var fix = new OcrLanguageInstallFix("vi", run);
+        var r = await fix.ExecuteAsync(new Progress<string>(), CancellationToken.None);
+        return (new FixResultLite(r.IsSuccess, r.Message), await fix.VerifyAsync(CancellationToken.None));
+    }
+
+    private sealed record FixResultLite(bool Ok, string Message);
+
+    [Fact]
+    public async Task Install_Installed_Succeeds()
+    {
+        var (r, v) = await RunFix("STATE=Installed;RESTART=False", "Installed");
+        Assert.True(r.Ok);
+        Assert.True(v);
+    }
+
+    [Fact]
+    public async Task Install_Pending_SucceedsAndTellsToRestart()
+    {
+        var (r, v) = await RunFix("STATE=InstallPending;RESTART=True", "InstallPending");
+        Assert.True(r.Ok);
+        Assert.Contains("khởi động lại", r.Message);
+        Assert.True(v);
+    }
+
+    [Fact]
+    public async Task Install_NotPresent_FailsWithState()
+    {
+        var (r, v) = await RunFix("STATE=NotPresent;RESTART=False", "NotPresent");
+        Assert.False(r.Ok);
+        Assert.Contains("NotPresent", r.Message);
+        Assert.False(v);
     }
 }
