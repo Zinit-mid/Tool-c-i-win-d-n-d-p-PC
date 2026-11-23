@@ -80,6 +80,7 @@ public partial class MainWindow : Window
         {
             new Tile("\uE8A5", "Công cụ PDF", "Gộp, tách, xoay, ảnh/Word ↔ PDF", "Công cụ PDF"),
             new Tile("\uE890", "Xem PDF", "Xem nhanh, xuất trang ra ảnh", "Xem PDF"),
+            new Tile("\uE8D2", "Đọc chữ từ ảnh/PDF", "Lấy nội dung chữ Việt + Anh (OCR)", "Đọc chữ từ ảnh/PDF"),
         }),
     };
 

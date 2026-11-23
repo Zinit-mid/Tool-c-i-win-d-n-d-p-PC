@@ -1,0 +1,48 @@
+<UserControl x:Class="PCTool.Views.OcrView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock Text="Đọc chữ từ ảnh / PDF" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Foreground="Gray" Margin="0,4,0,0" TextWrapping="Wrap"
+                       Text="Chọn ảnh chụp văn bản (png, jpg, bmp, tif) hoặc file PDF scan, PCTool dùng chức năng đọc chữ có sẵn của Windows để lấy nội dung. Chạy hoàn toàn trên máy, không gửi file đi đâu. Ảnh nét, đủ sáng, không bị nghiêng thì đọc đúng hơn; chữ viết tay thường sai." />
+        </StackPanel>
+
+        <DockPanel Grid.Row="1" Margin="0,0,0,8">
+            <Button Content="Chọn file..." DockPanel.Dock="Right" Width="110" Margin="8,0,0,0" Click="Browse_Click" />
+            <TextBox x:Name="PathBox" IsReadOnly="True" VerticalContentAlignment="Center" Height="30" />
+        </DockPanel>
+
+        <WrapPanel Grid.Row="2" Margin="0,0,0,8">
+            <TextBlock Text="Ngôn ngữ:" VerticalAlignment="Center" Margin="0,0,8,0" />
+            <ComboBox x:Name="LangBox" Width="230" Height="30" VerticalContentAlignment="Center" Margin="0,0,10,0" />
+            <Button x:Name="InstallLangButton" Content="Cài gói ngôn ngữ này" Width="160" Height="30" Margin="0,0,10,0"
+                    Click="InstallLang_Click" />
+            <CheckBox x:Name="DryRunBox" Content="Chạy thử (khi cài gói ngôn ngữ)" IsChecked="True" VerticalAlignment="Center" />
+        </WrapPanel>
+
+        <StackPanel Grid.Row="3" Margin="0,0,0,8">
+            <WrapPanel>
+                <Button x:Name="StartButton" Content="Đọc chữ" Width="110" Height="36" Margin="0,0,10,0" Click="Start_Click" />
+                <Button x:Name="StopButton" Content="Dừng" Width="80" Height="36" Margin="0,0,10,0" Click="Stop_Click" IsEnabled="False" />
+                <Button x:Name="CopyButton" Content="Sao chép chữ" Width="120" Height="36" Margin="0,0,10,0" Click="Copy_Click" IsEnabled="False" />
+                <Button x:Name="SaveButton" Content="Lưu ra file .txt" Width="130" Height="36" Click="Save_Click" IsEnabled="False" />
+            </WrapPanel>
+            <ProgressBar x:Name="Progress" Height="6" Margin="0,8,0,0" Minimum="0" Maximum="100" />
+        </StackPanel>
+
+        <TextBox x:Name="ResultBox" Grid.Row="4" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+                 FontSize="14" Padding="6" />
+
+        <TextBlock x:Name="StatusText" Grid.Row="5" Margin="0,8,0,0" Foreground="Gray" TextWrapping="Wrap" Text="Chưa chọn file." />
+    </Grid>
+</UserControl>

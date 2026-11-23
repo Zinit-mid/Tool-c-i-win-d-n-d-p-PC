@@ -84,6 +84,7 @@
             <TabItem Header="Thông số phần cứng"><views:HardwareView /></TabItem>
             <TabItem Header="Công cụ PDF"><views:PdfToolsView /></TabItem>
             <TabItem Header="Xem PDF"><views:PdfViewerView /></TabItem>
+            <TabItem Header="Đọc chữ từ ảnh/PDF"><views:OcrView /></TabItem>
             <TabItem Header="Quét driver thiếu"><views:DriverScanView /></TabItem>
             <TabItem Header="Chương trình khởi động"><views:StartupView /></TabItem>
             <TabItem Header="Dung lượng ổ"><views:DiskUsageView /></TabItem>
