@@ -91,7 +91,7 @@ $s = (Get-WindowsCapability -Online -Name '{{_lang.Capability}}').State
     public static (string State, bool Restart) ParseInstallOutput(string output)
     {
         string state = "", restart = "";
-        foreach (var part in (output ?? "").Split('\r', '\n', ';', StringSplitOptions.RemoveEmptyEntries))
+        foreach (var part in (output ?? "").Split(new[] { '\r', '\n', ';' }, StringSplitOptions.RemoveEmptyEntries))
         {
             var t = part.Trim();
             if (t.StartsWith("STATE=", StringComparison.Ordinal)) state = t[6..].Trim();
