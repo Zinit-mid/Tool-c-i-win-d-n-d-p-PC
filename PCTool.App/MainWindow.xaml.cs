@@ -68,6 +68,7 @@ public partial class MainWindow : Window
         {
             new Tile("\uE896", "Cài nhanh ứng dụng", "Cài hàng loạt bằng winget, thêm app gợi ý", "Cài nhanh ứng dụng"),
             new Tile("\uE90F", "Tiện ích khác", "Kiểm tra thiết bị, file ẩn, Kho Driver IRST", "Tiện ích khác"),
+            new Tile("\uE714", "Cắt / ghép video", "Cắt đoạn, ghép nhiều video bằng FFmpeg", "Cắt / ghép video"),
         }),
         ("Sửa lỗi & bảo vệ", new[]
         {

@@ -1,0 +1,57 @@
+<UserControl x:Class="PCTool.Views.VideoToolView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16">
+            <TextBlock Text="Cắt / ghép video" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Foreground="Gray" Margin="0,4,0,10" TextWrapping="Wrap"
+                       Text="Dùng FFmpeg (phần mềm miễn phí) để cắt một đoạn hoặc ghép nhiều video. Kết quả luôn là file MỚI nằm cạnh file gốc; file gốc không bị sửa, không ghi đè file nào." />
+
+            <TextBlock x:Name="SetupText" TextWrapping="Wrap" Margin="0,0,0,6" />
+            <WrapPanel Margin="0,0,0,10">
+                <Button x:Name="InstallButton" Content="Cài FFmpeg" Width="130" Height="30" Margin="0,0,10,0" Click="Install_Click" />
+                <CheckBox x:Name="DryRunBox" Content="Chạy thử (không làm thật)" IsChecked="True" VerticalAlignment="Center" />
+            </WrapPanel>
+
+            <GroupBox Header="1. Cắt một đoạn video" Padding="10" Margin="0,0,0,8">
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,6">
+                        <Button Content="Chọn video..." DockPanel.Dock="Right" Width="120" Margin="8,0,0,0" Click="CutBrowse_Click" />
+                        <TextBox x:Name="CutPath" IsReadOnly="True" Height="30" VerticalContentAlignment="Center" />
+                    </DockPanel>
+                    <WrapPanel Margin="0,0,0,6">
+                        <TextBlock Text="Từ:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                        <TextBox x:Name="StartBox" Text="00:00:00" Width="110" Height="30" VerticalContentAlignment="Center" Margin="0,0,16,0" />
+                        <TextBlock Text="Đến:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                        <TextBox x:Name="EndBox" Text="00:01:00" Width="110" Height="30" VerticalContentAlignment="Center" />
+                    </WrapPanel>
+                    <TextBlock Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,6"
+                               Text="Nhập giờ:phút:giây, ví dụ 00:01:30. Cũng nhận 1:30 hoặc số giây như 90." />
+                    <CheckBox x:Name="CutFastBox" IsChecked="True" Margin="0,0,0,6" TextBlock.TextWrapping="Wrap"
+                              Content="Cắt nhanh, không mất chất lượng (điểm cắt có thể lệch vài giây). Bỏ tick để cắt đúng điểm nhưng lâu hơn." />
+                    <Button Content="Cắt video" Width="140" Height="34" HorizontalAlignment="Left" Click="Cut_Click" />
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="2. Ghép nhiều video" Padding="10" Margin="0,0,0,8">
+                <StackPanel>
+                    <ListBox x:Name="MergeList" Height="130" Margin="0,0,0,6" />
+                    <WrapPanel Margin="0,0,0,6">
+                        <Button Content="Thêm video..." Width="120" Height="30" Margin="0,0,8,0" Click="MergeAdd_Click" />
+                        <Button Content="Bỏ mục chọn" Width="110" Height="30" Margin="0,0,8,0" Click="MergeRemove_Click" />
+                        <Button Content="Lên" Width="60" Height="30" Margin="0,0,8,0" Click="MergeUp_Click" />
+                        <Button Content="Xuống" Width="60" Height="30" Click="MergeDown_Click" />
+                    </WrapPanel>
+                    <CheckBox x:Name="MergeFastBox" IsChecked="False" Margin="0,0,0,6" TextBlock.TextWrapping="Wrap"
+                              Content="Ghép nhanh, không mã hóa lại (CHỈ khi các video cùng định dạng, cùng độ phân giải). Bỏ tick = ghép được mọi video nhưng lâu hơn." />
+                    <Button Content="Ghép video" Width="140" Height="34" HorizontalAlignment="Left" Click="Merge_Click" />
+                </StackPanel>
+            </GroupBox>
+
+            <ProgressBar x:Name="Progress" Height="8" IsIndeterminate="False" />
+            <TextBlock x:Name="StatusText" Margin="0,6,0,6" Foreground="Gray" TextWrapping="Wrap" Text="Sẵn sàng." />
+            <Button x:Name="RevealButton" Content="Mở thư mục chứa file kết quả" Width="230" Height="32" HorizontalAlignment="Left"
+                    IsEnabled="False" Click="Reveal_Click" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

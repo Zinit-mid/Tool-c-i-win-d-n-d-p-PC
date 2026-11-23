@@ -72,6 +72,7 @@
             <TabItem Header="Cài nhanh ứng dụng"><views:AppInstallerView /></TabItem>
             <TabItem Header="Thiết lập Windows"><views:TweaksView /></TabItem>
             <TabItem Header="Tiện ích khác"><views:ToolsView /></TabItem>
+            <TabItem Header="Cắt / ghép video"><views:VideoToolView /></TabItem>
             <TabItem Header="Tạo USB cài Windows"><views:ReinstallView /></TabItem>
             <TabItem Header="Cài lại Win trực tiếp"><views:DirectReinstallView /></TabItem>
             <TabItem Header="Sao lưu Driver / Wi-Fi"><views:BackupView /></TabItem>
