@@ -1,16 +1,24 @@
+using PCTool.Core.AppInstaller;
 using PCTool.Core.Ocr;
-using PCTool.Core.Windows;
 using Xunit;
 
 namespace PCTool.Tests.Utilities;
 
 public class OcrTests
 {
-    [Fact]
-    public void Languages_AreVietnameseAndEnglish_WithFixedCapabilityNames()
+    private sealed class FakeRunner : IProcessRunner
     {
-        Assert.Equal(new[] { "vi", "en" }, OcrInfo.Languages.Select(l => l.Tag));
-        Assert.All(OcrInfo.Languages, l => Assert.Matches(@"^Language\.OCR~~~[a-z]{2}-[A-Z]{2}~0\.0\.1\.0$", l.Capability));
+        public List<(string File, IReadOnlyList<string> Args)> Calls { get; } = new();
+        public ProcessResult Result { get; set; } = new(0, "Xin chào", "");
+        public Task<ProcessResult> RunAsync(string fileName, IReadOnlyList<string> args, int timeoutSeconds, CancellationToken ct)
+        { Calls.Add((fileName, args)); return Task.FromResult(Result); }
+    }
+
+    private static string TempDir()
+    {
+        var d = Path.Combine(Path.GetTempPath(), "pct-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(d);
+        return d;
     }
 
     [Theory]
@@ -22,8 +30,7 @@ public class OcrTests
     [Fact]
     public void CheckInput_RejectsWrongExtension_AndAcceptsImagesAndPdf()
     {
-        var dir = Path.Combine(Path.GetTempPath(), "pct-" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(dir);
+        var dir = TempDir();
         try
         {
             foreach (var ext in new[] { ".png", ".JPG", ".tiff", ".pdf" })
@@ -44,8 +51,7 @@ public class OcrTests
     [Fact]
     public void OutputPath_IsBesideInput_NeverOverwrites()
     {
-        var dir = Path.Combine(Path.GetTempPath(), "pct-" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(dir);
+        var dir = TempDir();
         try
         {
             var input = Path.Combine(dir, "bien-lai.pdf");
@@ -70,55 +76,93 @@ public class OcrTests
     }
 
     [Fact]
-    public void InstallFix_OnlyKnownLanguage_AndFixedScript()
+    public void Tesseract_InstallEntry_IsValidWinget()
     {
-        Assert.Throws<ArgumentException>(() => new OcrLanguageInstallFix("xx'; calc"));
-        var fix = new OcrLanguageInstallFix("vi");
-        Assert.Contains("Language.OCR~~~vi-VN~0.0.1.0", fix.InstallScript());
-        Assert.False(fix.RequiresRestorePoint);
+        Assert.Empty(AppEntryValidator.Validate(TesseractInfo.InstallEntry));
+        Assert.Equal("UB-Mannheim.TesseractOCR", TesseractInfo.InstallEntry.WingetId);
     }
 
     [Fact]
-    public void ParseInstallOutput_ReadsStateAndRestart()
+    public void Tesseract_Modes_AreFixed_AndSpecChecked()
     {
-        Assert.Equal(("Installed", false), OcrLanguageInstallFix.ParseInstallOutput("STATE=Installed;RESTART=False"));
-        Assert.Equal(("InstallPending", true), OcrLanguageInstallFix.ParseInstallOutput("x\r\nSTATE=InstallPending;RESTART=True\r\n"));
-        Assert.Equal(("", false), OcrLanguageInstallFix.ParseInstallOutput(""));
+        Assert.Equal(new[] { "vie+eng", "vie", "eng" }, TesseractInfo.Modes.Select(m => m.Spec));
+        Assert.False(TesseractInfo.IsSpecAllowed("vie; calc"));
+        Assert.False(TesseractInfo.IsSpecAllowed(null));
+        Assert.Throws<ArgumentException>(() => TesseractInfo.BuildArgs(@"C:\a.png", "xx", @"C:\t"));
     }
-
-    private static async Task<(FixResultLite R, bool V)> RunFix(string installOut, string checkOut)
-    {
-        ScriptRunner run = (s, _) => Task.FromResult(new PowerShellResult(0, s.Contains("Add-WindowsCapability") ? installOut : checkOut, ""));
-        var fix = new OcrLanguageInstallFix("vi", run);
-        var r = await fix.ExecuteAsync(new Progress<string>(), CancellationToken.None);
-        return (new FixResultLite(r.IsSuccess, r.Message), await fix.VerifyAsync(CancellationToken.None));
-    }
-
-    private sealed record FixResultLite(bool Ok, string Message);
 
     [Fact]
-    public async Task Install_Installed_Succeeds()
+    public void Tesseract_BuildArgs_RequireRootedImage_SeparateArgs()
     {
-        var (r, v) = await RunFix("STATE=Installed;RESTART=False", "Installed");
+        var a = TesseractInfo.BuildArgs(@"C:\Anh\a b.png", "vie+eng", @"C:\Program Files\Tesseract-OCR\tessdata");
+        Assert.Equal(@"C:\Anh\a b.png", a[0]);
+        Assert.Equal("stdout", a[1]);
+        Assert.Contains("vie+eng", a);
+        Assert.Throws<ArgumentException>(() => TesseractInfo.BuildArgs("-l", "vie", @"C:\t"));
+    }
+
+    [Fact]
+    public void Tesseract_DataUrl_OnlyKnownCodes_FromOfficialRepo()
+    {
+        Assert.StartsWith("https://github.com/tesseract-ocr/tessdata_fast/raw/main/", TesseractInfo.DataUrl("vie"));
+        Assert.Throws<ArgumentException>(() => TesseractInfo.DataUrl("../x"));
+        Assert.True(TesseractDataFix.HostAllowed(new Uri("https://raw.githubusercontent.com/a/b")));
+        Assert.False(TesseractDataFix.HostAllowed(new Uri("https://evilgithub.com/a")));
+        Assert.False(TesseractDataFix.HostAllowed(new Uri("http://github.com/a")));
+    }
+
+    [Fact]
+    public void Tesseract_FindExe_UsesFakeExists()
+    {
+        Assert.Null(TesseractInfo.FindExe(_ => false));
+        Assert.EndsWith(@"Tesseract-OCR\tesseract.exe", TesseractInfo.FindExe(_ => true));
+    }
+
+    [Fact]
+    public async Task Tesseract_Recognize_PassesArgs_AndReturnsText()
+    {
+        var run = new FakeRunner();
+        var r = await TesseractInfo.RecognizeAsync(run, @"C:\T\tesseract.exe", @"C:\a.png", "vie", CancellationToken.None);
         Assert.True(r.Ok);
-        Assert.True(v);
+        Assert.Equal("Xin chào", r.Text);
+        Assert.Equal(@"C:\T\tesseract.exe", run.Calls[0].File);
+        Assert.Contains(@"C:\T\tessdata", run.Calls[0].Args);
+
+        run.Result = new ProcessResult(1, "", "lỗi");
+        var bad = await TesseractInfo.RecognizeAsync(run, @"C:\T\tesseract.exe", @"C:\a.png", "vie", CancellationToken.None);
+        Assert.False(bad.Ok);
+        Assert.Equal("lỗi", bad.Error);
     }
 
     [Fact]
-    public async Task Install_Pending_SucceedsAndTellsToRestart()
+    public async Task DataFix_DownloadsMissing_SkipsExisting_RejectsTinyFile()
     {
-        var (r, v) = await RunFix("STATE=InstallPending;RESTART=True", "InstallPending");
-        Assert.True(r.Ok);
-        Assert.Contains("khởi động lại", r.Message);
-        Assert.True(v);
-    }
+        var dir = TempDir();
+        try
+        {
+            var exe = Path.Combine(dir, "tesseract.exe");
+            var calls = new List<string>();
+            Func<string, string, CancellationToken, Task> ok = (url, dest, _) =>
+            { calls.Add(url); File.WriteAllBytes(dest, new byte[200_000]); return Task.CompletedTask; };
 
-    [Fact]
-    public async Task Install_NotPresent_FailsWithState()
-    {
-        var (r, v) = await RunFix("STATE=NotPresent;RESTART=False", "NotPresent");
-        Assert.False(r.Ok);
-        Assert.Contains("NotPresent", r.Message);
-        Assert.False(v);
+            Assert.Throws<ArgumentException>(() => new TesseractDataFix(exe, new[] { "xx" }));
+            var fix = new TesseractDataFix(exe, new[] { "vie", "eng" }, ok);
+            Directory.CreateDirectory(TesseractInfo.TessdataDir(exe));
+            File.WriteAllBytes(TesseractInfo.DataFile(exe, "eng"), new byte[200_000]);
+
+            var res = await fix.ExecuteAsync(new Progress<string>(), CancellationToken.None);
+            Assert.True(res.IsSuccess);
+            Assert.Single(calls);
+            Assert.EndsWith("vie.traineddata", calls[0]);
+            Assert.True(await fix.VerifyAsync(CancellationToken.None));
+            Assert.False(File.Exists(TesseractInfo.DataFile(exe, "vie") + ".part"));
+
+            File.Delete(TesseractInfo.DataFile(exe, "vie"));
+            Func<string, string, CancellationToken, Task> tiny = (_, dest, _) => { File.WriteAllBytes(dest, new byte[10]); return Task.CompletedTask; };
+            var bad = await new TesseractDataFix(exe, new[] { "vie" }, tiny).ExecuteAsync(new Progress<string>(), CancellationToken.None);
+            Assert.False(bad.IsSuccess);
+            Assert.False(File.Exists(TesseractInfo.DataFile(exe, "vie")));
+        }
+        finally { Directory.Delete(dir, true); }
     }
 }

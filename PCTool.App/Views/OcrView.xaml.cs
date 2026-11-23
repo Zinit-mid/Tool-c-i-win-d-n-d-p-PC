@@ -3,11 +3,10 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
+using PCTool.Core.AppInstaller;
 using PCTool.Core.Framework;
 using PCTool.Core.Ocr;
 using Windows.Data.Pdf;
-using Windows.Graphics.Imaging;
-using Windows.Media.Ocr;
 using Windows.Storage;
 using Windows.Storage.Streams;
 
@@ -17,108 +16,111 @@ public partial class OcrView : UserControl
 {
     private CancellationTokenSource? _cts;
     private string? _path;
-    private string? _lastText;
 
     public OcrView()
     {
         InitializeComponent();
         DryRunBox.IsChecked = SettingsService.Default.DryRunDefault;
-        RefreshLanguages();
+        foreach (var m in TesseractInfo.Modes) ModeBox.Items.Add(new ComboBoxItem { Content = m.Title, Tag = m.Spec });
+        ModeBox.SelectedIndex = 0;
+        RefreshSetup();
     }
 
-    private static OcrEngine? CreateEngine(string tag)
+    private void RefreshSetup()
     {
-        try
+        var exe = TesseractInfo.FindExe();
+        if (exe == null)
         {
-            var lang = OcrEngine.AvailableRecognizerLanguages.FirstOrDefault(l => l.LanguageTag.StartsWith(tag, StringComparison.OrdinalIgnoreCase));
-            return lang == null ? null : OcrEngine.TryCreateFromLanguage(lang);
-        }
-        catch (Exception ex)
-        {
-            Logger.Warn("OCR: không tạo được bộ đọc " + tag + ": " + ex.Message);
-            return null;
-        }
-    }
-
-    private void RefreshLanguages()
-    {
-        var keep = (LangBox.SelectedItem as ComboBoxItem)?.Tag as string;
-        LangBox.Items.Clear();
-        foreach (var l in OcrInfo.Languages)
-        {
-            bool ok = CreateEngine(l.Tag) != null;
-            LangBox.Items.Add(new ComboBoxItem { Content = l.Title + (ok ? "" : " (chưa cài gói)"), Tag = l.Tag });
+            SetupText.Text = "Tesseract: CHƯA cài. Bấm \"Cài Tesseract\" (cần Internet, cài bằng winget), rồi \"Tải dữ liệu Việt + Anh\".";
+            InstallDataButton.IsEnabled = false;
+            return;
         }
 
-        int idx = LangBox.Items.Cast<ComboBoxItem>().ToList().FindIndex(i => (string)i.Tag == keep);
-        if (idx < 0) idx = LangBox.Items.Cast<ComboBoxItem>().ToList().FindIndex(i => !((string)i.Content).Contains("chưa cài"));
-        LangBox.SelectedIndex = idx < 0 ? 0 : idx;
+        bool vie = TesseractInfo.HasData(exe, "vie"), eng = TesseractInfo.HasData(exe, "eng");
+        SetupText.Text = $"Tesseract: đã cài. Dữ liệu tiếng Việt: {(vie ? "có" : "CHƯA có")}, tiếng Anh: {(eng ? "có" : "CHƯA có")}." +
+                         (vie && eng ? "" : " Bấm \"Tải dữ liệu Việt + Anh\".");
+        InstallDataButton.IsEnabled = !(vie && eng);
     }
 
     private void Browse_Click(object sender, RoutedEventArgs e)
     {
-        var dlg = new OpenFileDialog
-        {
-            Filter = "Ảnh hoặc PDF|*.png;*.jpg;*.jpeg;*.bmp;*.tif;*.tiff;*.pdf|Tất cả file|*.*"
-        };
+        var dlg = new OpenFileDialog { Filter = "Ảnh hoặc PDF|*.png;*.jpg;*.jpeg;*.bmp;*.tif;*.tiff;*.pdf|Tất cả file|*.*" };
         if (dlg.ShowDialog() != true) return;
         if (OcrInfo.CheckInput(dlg.FileName) is { } err) { StatusText.Text = err; return; }
         _path = dlg.FileName;
         PathBox.Text = _path;
-        StatusText.Text = "Đã chọn file. Chọn ngôn ngữ rồi bấm \"Đọc chữ\".";
+        StatusText.Text = "Đã chọn file. Chọn kiểu đọc rồi bấm \"Đọc chữ\".";
     }
 
-    private async void InstallLang_Click(object sender, RoutedEventArgs e)
+    private async void InstallTess_Click(object sender, RoutedEventArgs e)
     {
-        if ((LangBox.SelectedItem as ComboBoxItem)?.Tag is not string tag) return;
-        if (CreateEngine(tag) != null) { StatusText.Text = "Gói ngôn ngữ này đã có sẵn."; return; }
+        if (TesseractInfo.FindExe() != null) { StatusText.Text = "Tesseract đã được cài."; RefreshSetup(); return; }
+        var executor = new FixExecutor(new RestorePointService());
+        var fix = new InstallAppFix(TesseractInfo.InstallEntry, new ProcessRunner(), "", _ => { });
+        StatusText.Text = "Đang xử lý...";
+        StatusText.Text = await FixUi.RunAsync(executor, fix, DryRunBox.IsChecked == true, m => StatusText.Text = m);
+        RefreshSetup();
+        if (TesseractInfo.FindExe() == null && DryRunBox.IsChecked != true)
+            StatusText.Text += "\nChưa thấy Tesseract ở thư mục Program Files. Thử đóng và mở lại PCTool; nếu vẫn vậy, mở \"Nhật ký thao tác\" ở dưới và gửi tôi dòng báo lỗi.";
+    }
+
+    private async void InstallData_Click(object sender, RoutedEventArgs e)
+    {
+        var exe = TesseractInfo.FindExe();
+        if (exe == null) { StatusText.Text = "Cần cài Tesseract trước."; return; }
         var executor = new FixExecutor(new RestorePointService());
         StatusText.Text = "Đang xử lý...";
-        var msg = await FixUi.RunAsync(executor, new OcrLanguageInstallFix(tag), DryRunBox.IsChecked == true, m => StatusText.Text = m);
-        RefreshLanguages();
-        if (CreateEngine(tag) == null && DryRunBox.IsChecked != true)
-            msg += "\nNếu ô ngôn ngữ vẫn ghi \"chưa cài gói\": khởi động lại máy rồi mở lại PCTool. Nếu vẫn vậy, mở \"Nhật ký thao tác\" ở dưới và gửi tôi dòng báo lỗi.";
-        StatusText.Text = msg;
-    }
-
-    private static async Task<SoftwareBitmap> LoadBitmapAsync(IRandomAccessStream stream)
-    {
-        var dec = await BitmapDecoder.CreateAsync(stream);
-        uint w = dec.PixelWidth, h = dec.PixelHeight, max = OcrEngine.MaxImageDimension;
-        var tr = new BitmapTransform();
-        if (w > max || h > max)
-        {
-            double f = (double)max / Math.Max(w, h);
-            tr.ScaledWidth = (uint)Math.Max(1, w * f);
-            tr.ScaledHeight = (uint)Math.Max(1, h * f);
-        }
-
-        return await dec.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied, tr,
-            ExifOrientationMode.RespectExifOrientation, ColorManagementMode.DoNotColorManage);
-    }
-
-    private static async Task<string> RecognizeAsync(OcrEngine engine, SoftwareBitmap bmp, CancellationToken ct)
-    {
-        var res = await engine.RecognizeAsync(bmp).AsTask(ct);
-        return string.Join("\r\n", res.Lines.Select(l => l.Text));
+        StatusText.Text = await FixUi.RunAsync(executor, new TesseractDataFix(exe, TesseractInfo.LangCodes), DryRunBox.IsChecked == true, m => StatusText.Text = m);
+        RefreshSetup();
     }
 
     private void SetBusy(bool busy)
     {
         StartButton.IsEnabled = !busy;
         StopButton.IsEnabled = busy;
-        InstallLangButton.IsEnabled = !busy;
+        InstallTessButton.IsEnabled = !busy;
         Progress.IsIndeterminate = busy;
+    }
+
+    private static async Task<List<string>> RenderPdfPagesAsync(string pdfPath, string tempDir, CancellationToken ct, Action<string> status)
+    {
+        var file = await StorageFile.GetFileFromPathAsync(Path.GetFullPath(pdfPath));
+        var doc = await Windows.Data.Pdf.PdfDocument.LoadFromFileAsync(file);
+        if (doc.PageCount > OcrInfo.MaxPdfPages)
+            throw new InvalidOperationException($"File có {doc.PageCount} trang, nhiều hơn {OcrInfo.MaxPdfPages}. Hãy tách PDF ra từng phần rồi đọc.");
+
+        var files = new List<string>();
+        for (uint i = 0; i < doc.PageCount; i++)
+        {
+            ct.ThrowIfCancellationRequested();
+            status($"Đang chuẩn bị trang {i + 1}/{doc.PageCount}...");
+            using var page = doc.GetPage(i);
+            var png = Path.Combine(tempDir, $"trang-{i + 1:000}.png");
+            using (var ms = new InMemoryRandomAccessStream())
+            {
+                await page.RenderToStreamAsync(ms, new PdfPageRenderOptions { DestinationWidth = 2200 }).AsTask(ct);
+                ms.Seek(0);
+                using var src = ms.AsStreamForRead();
+                using var fs = new FileStream(png, FileMode.CreateNew, FileAccess.Write);
+                await src.CopyToAsync(fs, ct);
+            }
+
+            files.Add(png);
+        }
+
+        return files;
     }
 
     private async void Start_Click(object sender, RoutedEventArgs e)
     {
         if (OcrInfo.CheckInput(_path) is { } err) { StatusText.Text = err; return; }
-        if ((LangBox.SelectedItem as ComboBoxItem)?.Tag is not string tag) return;
-        var engine = CreateEngine(tag);
-        if (engine == null)
+        var exe = TesseractInfo.FindExe();
+        if (exe == null) { StatusText.Text = "Chưa cài Tesseract. Bấm \"Cài Tesseract\" trước."; return; }
+        var spec = (ModeBox.SelectedItem as ComboBoxItem)?.Tag as string ?? "vie+eng";
+        var missing = spec.Split('+').Where(c => !TesseractInfo.HasData(exe, c)).ToList();
+        if (missing.Count > 0)
         {
-            StatusText.Text = "Máy chưa có gói đọc chữ cho ngôn ngữ này. Bấm \"Cài gói ngôn ngữ này\" hoặc chọn ngôn ngữ khác.";
+            StatusText.Text = "Thiếu dữ liệu ngôn ngữ: " + string.Join(", ", missing) + ". Bấm \"Tải dữ liệu Việt + Anh\".";
             return;
         }
 
@@ -127,48 +129,36 @@ public partial class OcrView : UserControl
         SetBusy(true);
         CopyButton.IsEnabled = SaveButton.IsEnabled = false;
         ResultBox.Clear();
-        _lastText = null;
+        string? tempDir = null;
         try
         {
             var full = Path.GetFullPath(_path!);
-            var file = await StorageFile.GetFileFromPathAsync(full);
-            var pages = new List<string>();
-
+            List<string> images;
             if (OcrInfo.IsPdf(full))
             {
-                var doc = await Windows.Data.Pdf.PdfDocument.LoadFromFileAsync(file);
-                if (doc.PageCount > OcrInfo.MaxPdfPages)
-                {
-                    StatusText.Text = $"File có {doc.PageCount} trang, nhiều hơn {OcrInfo.MaxPdfPages}. Hãy tách PDF ra từng phần rồi đọc.";
-                    return;
-                }
-
-                for (uint i = 0; i < doc.PageCount; i++)
-                {
-                    ct.ThrowIfCancellationRequested();
-                    StatusText.Text = $"Đang đọc trang {i + 1}/{doc.PageCount}...";
-                    using var page = doc.GetPage(i);
-                    using var ms = new InMemoryRandomAccessStream();
-                    await page.RenderToStreamAsync(ms, new PdfPageRenderOptions { DestinationWidth = 2200 }).AsTask(ct);
-                    ms.Seek(0);
-                    using var bmp = await LoadBitmapAsync(ms);
-                    pages.Add(await RecognizeAsync(engine, bmp, ct));
-                }
+                tempDir = Path.Combine(Path.GetTempPath(), "PCTool-ocr-" + Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(tempDir);
+                images = await RenderPdfPagesAsync(full, tempDir, ct, m => StatusText.Text = m);
             }
-            else
+            else images = new List<string> { full };
+
+            var runner = new ProcessRunner();
+            var pages = new List<string>();
+            for (int i = 0; i < images.Count; i++)
             {
-                StatusText.Text = "Đang đọc ảnh...";
-                using var stream = await file.OpenReadAsync();
-                using var bmp = await LoadBitmapAsync(stream);
-                pages.Add(await RecognizeAsync(engine, bmp, ct));
+                ct.ThrowIfCancellationRequested();
+                StatusText.Text = $"Đang đọc {(images.Count > 1 ? $"trang {i + 1}/{images.Count}" : "ảnh")}...";
+                var r = await TesseractInfo.RecognizeAsync(runner, exe, images[i], spec, ct);
+                if (!r.Ok) { StatusText.Text = "Tesseract báo lỗi: " + r.Error; Logger.Warn("OCR lỗi: " + r.Error); return; }
+                pages.Add(r.Text);
             }
 
-            _lastText = OcrInfo.JoinPages(pages);
-            ResultBox.Text = _lastText;
-            bool empty = string.IsNullOrWhiteSpace(_lastText);
+            var text = OcrInfo.JoinPages(pages);
+            ResultBox.Text = text;
+            bool empty = string.IsNullOrWhiteSpace(text);
             CopyButton.IsEnabled = SaveButton.IsEnabled = !empty;
             StatusText.Text = empty
-                ? "Không đọc ra chữ nào. Thử ảnh nét hơn, đúng chiều, hoặc đổi ngôn ngữ."
+                ? "Không đọc ra chữ nào. Thử ảnh nét hơn, đúng chiều, hoặc đổi kiểu đọc."
                 : $"Xong: đọc {pages.Count} trang. Hãy đọc lại, đặc biệt dấu tiếng Việt, số và tên riêng vì có thể sai.";
         }
         catch (OperationCanceledException) { StatusText.Text = "Đã dừng."; }
@@ -177,7 +167,11 @@ public partial class OcrView : UserControl
             StatusText.Text = "Không đọc được (file hỏng, có mật khẩu hoặc định dạng lạ): " + ex.Message;
             Logger.Warn("OCR lỗi: " + ex.Message);
         }
-        finally { SetBusy(false); }
+        finally
+        {
+            if (tempDir != null) { try { Directory.Delete(tempDir, true); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
+            SetBusy(false);
+        }
     }
 
     private void Stop_Click(object sender, RoutedEventArgs e) => _cts?.Cancel();

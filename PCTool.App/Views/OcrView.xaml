@@ -14,7 +14,7 @@
         <StackPanel Grid.Row="0" Margin="0,0,0,10">
             <TextBlock Text="Đọc chữ từ ảnh / PDF" FontSize="22" FontWeight="SemiBold" />
             <TextBlock Foreground="Gray" Margin="0,4,0,0" TextWrapping="Wrap"
-                       Text="Chọn ảnh chụp văn bản (png, jpg, bmp, tif) hoặc file PDF scan, PCTool dùng chức năng đọc chữ có sẵn của Windows để lấy nội dung. Chạy hoàn toàn trên máy, không gửi file đi đâu. Ảnh nét, đủ sáng, không bị nghiêng thì đọc đúng hơn; chữ viết tay thường sai." />
+                       Text="Chọn ảnh chụp văn bản (png, jpg, bmp, tif) hoặc file PDF scan, PCTool dùng Tesseract (phần mềm đọc chữ miễn phí, hỗ trợ tiếng Việt và tiếng Anh) để lấy nội dung. Chạy hoàn toàn trên máy, không gửi file đi đâu. Ảnh nét, đủ sáng, không bị nghiêng thì đọc đúng hơn; chữ viết tay thường sai." />
         </StackPanel>
 
         <DockPanel Grid.Row="1" Margin="0,0,0,8">
@@ -22,13 +22,16 @@
             <TextBox x:Name="PathBox" IsReadOnly="True" VerticalContentAlignment="Center" Height="30" />
         </DockPanel>
 
-        <WrapPanel Grid.Row="2" Margin="0,0,0,8">
-            <TextBlock Text="Ngôn ngữ:" VerticalAlignment="Center" Margin="0,0,8,0" />
-            <ComboBox x:Name="LangBox" Width="230" Height="30" VerticalContentAlignment="Center" Margin="0,0,10,0" />
-            <Button x:Name="InstallLangButton" Content="Cài gói ngôn ngữ này" Width="160" Height="30" Margin="0,0,10,0"
-                    Click="InstallLang_Click" />
-            <CheckBox x:Name="DryRunBox" Content="Chạy thử (khi cài gói ngôn ngữ)" IsChecked="True" VerticalAlignment="Center" />
-        </WrapPanel>
+        <StackPanel Grid.Row="2" Margin="0,0,0,8">
+            <TextBlock x:Name="SetupText" TextWrapping="Wrap" Margin="0,0,0,6" />
+            <WrapPanel>
+                <Button x:Name="InstallTessButton" Content="Cài Tesseract" Width="130" Height="30" Margin="0,0,10,0" Click="InstallTess_Click" />
+                <Button x:Name="InstallDataButton" Content="Tải dữ liệu Việt + Anh" Width="170" Height="30" Margin="0,0,10,0" Click="InstallData_Click" />
+                <CheckBox x:Name="DryRunBox" Content="Chạy thử (khi cài/tải)" IsChecked="True" VerticalAlignment="Center" Margin="0,0,16,0" />
+                <TextBlock Text="Đọc theo:" VerticalAlignment="Center" Margin="0,0,8,0" />
+                <ComboBox x:Name="ModeBox" Width="210" Height="30" VerticalContentAlignment="Center" />
+            </WrapPanel>
+        </StackPanel>
 
         <StackPanel Grid.Row="3" Margin="0,0,0,8">
             <WrapPanel>
