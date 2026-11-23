@@ -86,7 +86,7 @@ public partial class AppInstallerView : UserControl
 
     // Thứ tự nhóm giống một bảng menu: nhóm lạ (người dùng tự đặt) xếp sau cùng, "Khác" cuối hẳn.
     private static readonly string[] GroupOrder =
-        { "Trình duyệt", "Tiện ích", "Lưu trữ", "Xem phim", "Đọc PDF", "Điều khiển từ xa", "Liên lạc" };
+        { "Trình duyệt", "Tiện ích", "Lưu trữ", "Xem phim", "Cắt ghép video", "Đọc PDF", "Điều khiển từ xa", "Liên lạc" };
 
     private static string GlyphFor(string group) => group switch
     {
@@ -94,6 +94,7 @@ public partial class AppInstallerView : UserControl
         "Tiện ích" => "\uE713",
         "Lưu trữ" => "\uE753",
         "Xem phim" => "\uE714",
+        "Cắt ghép video" => "\uE714",
         "Đọc PDF" => "\uE8A5",
         "Điều khiển từ xa" => "\uE7F4",
         "Liên lạc" => "\uE715",
@@ -253,6 +254,7 @@ public partial class AppInstallerView : UserControl
 
         var runner = new ProcessRunner();
         var desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+        var publicDesktop = new[] { Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory) };
         var executor = new FixExecutor(new RestorePointService());
         var options = SettingsService.Default.BuildOptions(dryRun);
         int ok = 0, bad = 0;
@@ -266,7 +268,7 @@ public partial class AppInstallerView : UserControl
                 StatusText.Text = $"({i + 1}/{chosen.Count}) {row.Name}";
                 try
                 {
-                    var fix = new InstallAppFix(row.Entry, runner, desktop, OpenUrl);
+                    var fix = new InstallAppFix(row.Entry, runner, desktop, OpenUrl, publicDesktop);
                     var result = await executor.RunAsync(fix, options, new Progress<string>(m => StatusText.Text = m), ct);
                     row.Result = Describe(result);
                     if (result.IsSuccess) ok++; else bad++;
@@ -306,6 +308,17 @@ public partial class AppInstallerView : UserControl
         FixOutcome.Cancelled => "Đã dừng",
         _ => "✖ " + r.Message
     };
+
+    private void OpenDesktop_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var dir = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            Process.Start(new ProcessStartInfo(dir) { UseShellExecute = true });
+            StatusText.Text = "Đã mở thư mục Desktop: " + dir;
+        }
+        catch (Exception ex) { StatusText.Text = "Không mở được thư mục Desktop: " + ex.Message; }
+    }
 
     private void CancelButton_Click(object sender, RoutedEventArgs e) => _cts?.Cancel();
 

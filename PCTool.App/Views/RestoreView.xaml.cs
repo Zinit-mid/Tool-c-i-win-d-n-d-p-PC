@@ -134,7 +134,8 @@ public partial class RestoreView : UserControl
         {
             i++;
             StatusText.Text = $"({i}/{entries.Count}) {entry.WingetId}...";
-            var fix = new InstallAppFix(entry, runner, Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), _ => { });
+            var fix = new InstallAppFix(entry, runner, Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), _ => { },
+                new[] { Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory) });
             var res = await Run(fix);
             if (res.IsSuccess) ok++;
             lines.Add($"{entry.WingetId}: {Describe(res)}");
