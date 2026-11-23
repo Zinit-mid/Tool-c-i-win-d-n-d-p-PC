@@ -27,8 +27,9 @@
                     </WrapPanel>
                     <TextBlock Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,6"
                                Text="Nhập giờ:phút:giây, ví dụ 00:01:30. Cũng nhận 1:30 hoặc số giây như 90." />
-                    <CheckBox x:Name="CutFastBox" IsChecked="True" Margin="0,0,0,6" TextBlock.TextWrapping="Wrap"
-                              Content="Cắt nhanh, không mất chất lượng (điểm cắt có thể lệch vài giây). Bỏ tick để cắt đúng điểm nhưng lâu hơn." />
+                    <CheckBox x:Name="CutFastBox" IsChecked="True" Margin="0,0,0,6">
+                        <TextBlock TextWrapping="Wrap" Text="Cắt nhanh, không mất chất lượng (điểm cắt có thể lệch vài giây). Bỏ tick để cắt đúng điểm nhưng lâu hơn." />
+                    </CheckBox>
                     <Button Content="Cắt video" Width="140" Height="34" HorizontalAlignment="Left" Click="Cut_Click" />
                 </StackPanel>
             </GroupBox>
@@ -42,8 +43,9 @@
                         <Button Content="Lên" Width="60" Height="30" Margin="0,0,8,0" Click="MergeUp_Click" />
                         <Button Content="Xuống" Width="60" Height="30" Click="MergeDown_Click" />
                     </WrapPanel>
-                    <CheckBox x:Name="MergeFastBox" IsChecked="False" Margin="0,0,0,6" TextBlock.TextWrapping="Wrap"
-                              Content="Ghép nhanh, không mã hóa lại (CHỈ khi các video cùng định dạng, cùng độ phân giải). Bỏ tick = ghép được mọi video nhưng lâu hơn." />
+                    <CheckBox x:Name="MergeFastBox" IsChecked="False" Margin="0,0,0,6">
+                        <TextBlock TextWrapping="Wrap" Text="Ghép nhanh, không mã hóa lại (CHỈ khi các video cùng định dạng, cùng độ phân giải). Bỏ tick = ghép được mọi video nhưng lâu hơn." />
+                    </CheckBox>
                     <Button Content="Ghép video" Width="140" Height="34" HorizontalAlignment="Left" Click="Merge_Click" />
                 </StackPanel>
             </GroupBox>
