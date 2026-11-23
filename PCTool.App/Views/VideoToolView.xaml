@@ -41,8 +41,12 @@
                         <Button Content="Thêm video..." Width="120" Height="30" Margin="0,0,8,0" Click="MergeAdd_Click" />
                         <Button Content="Bỏ mục chọn" Width="110" Height="30" Margin="0,0,8,0" Click="MergeRemove_Click" />
                         <Button Content="Lên" Width="60" Height="30" Margin="0,0,8,0" Click="MergeUp_Click" />
-                        <Button Content="Xuống" Width="60" Height="30" Click="MergeDown_Click" />
+                        <Button Content="Xuống" Width="60" Height="30" Margin="0,0,8,0" Click="MergeDown_Click" />
+                        <Button Content="Xếp theo tên" Width="110" Height="30" Margin="0,0,8,0" Click="MergeSortName_Click" />
+                        <Button Content="Xếp theo ngày" Width="110" Height="30" Click="MergeSortDate_Click" />
                     </WrapPanel>
+                    <TextBlock Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,6"
+                               Text="Video được ghép đúng thứ tự số 1, 2, 3... trong danh sách. Chọn nhiều file một lúc thì tự xếp theo tên (1, 2, 10 chứ không phải 1, 10, 2). Muốn đổi thì chọn một dòng rồi bấm Lên/Xuống, hoặc bấm Xếp theo tên/ngày. Hộp xác nhận trước khi ghép cũng ghi lại thứ tự."/>
                     <CheckBox x:Name="MergeFastBox" IsChecked="False" Margin="0,0,0,6">
                         <TextBlock TextWrapping="Wrap" Text="Ghép nhanh, không mã hóa lại (CHỈ khi các video cùng định dạng, cùng độ phân giải). Bỏ tick = ghép được mọi video nhưng lâu hơn." />
                     </CheckBox>

@@ -70,6 +70,44 @@ public class VideoOpsTests
     }
 
     [Fact]
+    public void SortByName_IsNatural_NumbersByValue()
+    {
+        var sorted = VideoInfo.SortByName(new[] { @"C:.mp4", @"C:.mp4", @"C:.mp4", @"C:\Tap 9.mp4", @"C:\Tap 10.mp4", @"C:\Tap 09b.mp4" });
+        Assert.Equal(new[] { "1.mp4", "2.mp4", "10.mp4", "Tap 09b.mp4", "Tap 9.mp4", "Tap 10.mp4" }, sorted.Select(Path.GetFileName));
+    }
+
+    [Fact]
+    public void SortByDate_OldestFirst()
+    {
+        var dir = TempDir();
+        try
+        {
+            var a = Vid(dir, "a.mp4"); var b = Vid(dir, "b.mp4");
+            File.SetLastWriteTimeUtc(a, new DateTime(2026, 1, 2, 0, 0, 0, DateTimeKind.Utc));
+            File.SetLastWriteTimeUtc(b, new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+            Assert.Equal(new[] { "b.mp4", "a.mp4" }, VideoInfo.SortByDate(new[] { a, b }).Select(Path.GetFileName));
+        }
+        finally { Directory.Delete(dir, true); }
+    }
+
+    [Fact]
+    public void Merge_KeepsGivenOrder_InActionsAndArgs()
+    {
+        var dir = TempDir();
+        try
+        {
+            var a = Vid(dir, "a.mp4"); var b = Vid(dir, "b.mp4"); var c = Vid(dir, "c.mp4");
+            var fix = new VideoMergeFix("ffmpeg.exe", new[] { c, a, b }, false);
+            Assert.Contains("c.mp4 → a.mp4 → b.mp4", fix.Actions[0]);
+            var args = fix.BuildReencodeArgs();
+            var inputs = args.Select((x, i) => (x, i)).Where(t => t.x == "-i").Select(t => Path.GetFileName(args[t.i + 1])).ToList();
+            Assert.Equal(new[] { "c.mp4", "a.mp4", "b.mp4" }, inputs);
+            Assert.Equal("file '" + c.Replace('\\', '/') + "'\nfile '" + a.Replace('\\', '/') + "'\nfile '" + b.Replace('\\', '/') + "'\n", VideoInfo.ConcatListText(new[] { c, a, b }));
+        }
+        finally { Directory.Delete(dir, true); }
+    }
+
+    [Fact]
     public void InstallEntry_IsValidWinget() => Assert.Empty(AppEntryValidator.Validate(VideoInfo.InstallEntry));
 
     [Fact]

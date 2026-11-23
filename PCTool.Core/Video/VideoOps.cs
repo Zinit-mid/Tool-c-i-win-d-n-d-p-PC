@@ -93,6 +93,46 @@ public static class VideoInfo
         return null;
     }
 
+    /// <summary>So sánh tên "tự nhiên": số được so theo giá trị nên "2" đứng trước "10", "Tap 9" trước "Tap 10".</summary>
+    public sealed class NaturalComparer : IComparer<string>
+    {
+        public static NaturalComparer Instance { get; } = new();
+
+        public int Compare(string? x, string? y)
+        {
+            x ??= ""; y ??= "";
+            int i = 0, j = 0;
+            while (i < x.Length && j < y.Length)
+            {
+                if (char.IsDigit(x[i]) && char.IsDigit(y[j]))
+                {
+                    int si = i, sj = j;
+                    while (i < x.Length && char.IsDigit(x[i])) i++;
+                    while (j < y.Length && char.IsDigit(y[j])) j++;
+                    var a = x[si..i].TrimStart('0'); var b = y[sj..j].TrimStart('0');
+                    if (a.Length != b.Length) return a.Length < b.Length ? -1 : 1;
+                    int c = string.CompareOrdinal(a, b);
+                    if (c != 0) return c < 0 ? -1 : 1;
+                }
+                else
+                {
+                    int c = char.ToUpperInvariant(x[i]).CompareTo(char.ToUpperInvariant(y[j]));
+                    if (c != 0) return c < 0 ? -1 : 1;
+                    i++; j++;
+                }
+            }
+
+            int rest = (x.Length - i).CompareTo(y.Length - j);
+            return rest != 0 ? rest : string.CompareOrdinal(x, y);
+        }
+    }
+
+    public static List<string> SortByName(IEnumerable<string> files) =>
+        files.OrderBy(f => Path.GetFileName(f), NaturalComparer.Instance).ToList();
+
+    public static List<string> SortByDate(IEnumerable<string> files) =>
+        files.OrderBy(f => File.GetLastWriteTimeUtc(f)).ThenBy(f => Path.GetFileName(f), NaturalComparer.Instance).ToList();
+
     /// <summary>Dòng "file '...'" cho bộ ghép concat của FFmpeg: dùng dấu / và thoát dấu nháy đơn.</summary>
     public static string ConcatListText(IEnumerable<string> files)
     {

@@ -88,35 +88,67 @@ public partial class VideoToolView : UserControl
         await RunFixAsync(fix, fix.OutputPath);
     }
 
+    // Mỗi dòng là một ListBoxItem: chữ hiển thị "1. tên file", đường dẫn đầy đủ nằm trong Tag (và gợi ý khi rê chuột).
+    private List<string> MergePaths() => MergeList.Items.Cast<ListBoxItem>().Select(i => (string)i.Tag).ToList();
+
+    private void SetMergePaths(IEnumerable<string> paths, string? keepSelected = null)
+    {
+        MergeList.Items.Clear();
+        int n = 0;
+        foreach (var p in paths)
+        {
+            n++;
+            MergeList.Items.Add(new ListBoxItem { Content = $"{n}. {Path.GetFileName(p)}", Tag = p, ToolTip = p });
+        }
+
+        if (keepSelected != null)
+            for (int i = 0; i < MergeList.Items.Count; i++)
+                if ((string)((ListBoxItem)MergeList.Items[i]).Tag == keepSelected) { MergeList.SelectedIndex = i; break; }
+    }
+
     private void MergeAdd_Click(object sender, RoutedEventArgs e)
     {
         var dlg = new OpenFileDialog { Filter = VideoFilter, Multiselect = true };
         if (dlg.ShowDialog() != true) return;
+        var current = MergePaths();
+        var added = new List<string>();
         foreach (var f in dlg.FileNames)
         {
             if (VideoInfo.CheckVideo(f) is { } err) { StatusText.Text = err; continue; }
-            if (MergeList.Items.Count >= VideoInfo.MaxMergeFiles) { StatusText.Text = $"Tối đa {VideoInfo.MaxMergeFiles} file."; break; }
-            MergeList.Items.Add(f);
+            if (current.Count + added.Count >= VideoInfo.MaxMergeFiles) { StatusText.Text = $"Tối đa {VideoInfo.MaxMergeFiles} file."; break; }
+            if (current.Contains(f, StringComparer.OrdinalIgnoreCase) || added.Contains(f, StringComparer.OrdinalIgnoreCase)) continue;
+            added.Add(f);
         }
+
+        // Các file vừa chọn xếp theo tên (số theo giá trị), rồi nối vào cuối danh sách đang có.
+        current.AddRange(VideoInfo.SortByName(added));
+        SetMergePaths(current);
+        StatusText.Text = $"Danh sách có {current.Count} video. Kiểm tra số thứ tự trước khi ghép.";
     }
 
     private void MergeRemove_Click(object sender, RoutedEventArgs e)
     {
-        if (MergeList.SelectedIndex >= 0) MergeList.Items.RemoveAt(MergeList.SelectedIndex);
+        if (MergeList.SelectedIndex < 0) return;
+        var paths = MergePaths();
+        paths.RemoveAt(MergeList.SelectedIndex);
+        SetMergePaths(paths);
     }
 
     private void Move(int delta)
     {
         int i = MergeList.SelectedIndex, j = i + delta;
-        if (i < 0 || j < 0 || j >= MergeList.Items.Count) return;
-        var item = MergeList.Items[i];
-        MergeList.Items.RemoveAt(i);
-        MergeList.Items.Insert(j, item);
-        MergeList.SelectedIndex = j;
+        var paths = MergePaths();
+        if (i < 0 || j < 0 || j >= paths.Count) return;
+        var item = paths[i];
+        paths.RemoveAt(i);
+        paths.Insert(j, item);
+        SetMergePaths(paths, item);
     }
 
     private void MergeUp_Click(object sender, RoutedEventArgs e) => Move(-1);
     private void MergeDown_Click(object sender, RoutedEventArgs e) => Move(1);
+    private void MergeSortName_Click(object sender, RoutedEventArgs e) => SetMergePaths(VideoInfo.SortByName(MergePaths()));
+    private void MergeSortDate_Click(object sender, RoutedEventArgs e) => SetMergePaths(VideoInfo.SortByDate(MergePaths()));
 
     private async void Merge_Click(object sender, RoutedEventArgs e)
     {
@@ -124,7 +156,7 @@ public partial class VideoToolView : UserControl
         var exe = VideoInfo.FindFfmpeg();
         if (exe == null) { StatusText.Text = "Chưa cài FFmpeg. Bấm \"Cài FFmpeg\" trước."; return; }
         VideoMergeFix fix;
-        try { fix = new VideoMergeFix(exe, MergeList.Items.Cast<string>().ToList(), MergeFastBox.IsChecked == true); }
+        try { fix = new VideoMergeFix(exe, MergePaths(), MergeFastBox.IsChecked == true); }
         catch (ArgumentException ex) { StatusText.Text = ex.Message; return; }
         await RunFixAsync(fix, fix.OutputPath);
     }
