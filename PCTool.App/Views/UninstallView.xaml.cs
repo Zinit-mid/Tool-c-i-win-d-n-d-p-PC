@@ -9,12 +9,13 @@ namespace PCTool.Views;
 
 public partial class UninstallView : UserControl
 {
-    private sealed record Row(InstalledProgram Program, UninstallVerdict Verdict)
+    private sealed record Row(InstalledProgram? Program, StoreApp? Store, UninstallVerdict Verdict)
     {
-        public string Name => Program.Name;
-        public string Version => Program.Version;
-        public string Publisher => Program.Publisher;
-        public string SizeText => Program.SizeText;
+        public string Name => Program?.Name ?? Store!.Name;
+        public string Version => Program?.Version ?? Store!.Version;
+        public string Publisher => Program?.Publisher ?? Store!.PublisherText;
+        public string SizeText => Program?.SizeText ?? "";
+        public string Kind => Store is null ? "Chương trình" : "Ứng dụng Store";
         public string Status => Verdict.Allowed ? (Verdict.Warning is null ? "Gỡ được" : "Gỡ được (có cảnh báo)") : "Không cho gỡ";
     }
 
@@ -54,7 +55,14 @@ public partial class UninstallView : UserControl
         try
         {
             var list = await InstalledProgramsScanner.RunAsync(null, ct);
-            _rows = list.Select(p => new Row(p, UninstallPolicy.Evaluate(p))).ToList();
+            _rows = list.Select(p => new Row(p, null, UninstallPolicy.Evaluate(p))).ToList();
+            try
+            {
+                var store = await StoreAppsScanner.RunAsync(null, ct);
+                _rows.AddRange(store.Select(a => new Row(null, a, StoreAppPolicy.Evaluate(a))));
+                _rows = _rows.OrderBy(r => r.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
+            }
+            catch (InvalidOperationException ex) { Logger.Error("Không đọc được ứng dụng Store: " + ex.Message); }   // vẫn dùng được danh sách chương trình thường
             ApplyFilter();
             return true;
         }
@@ -72,23 +80,28 @@ public partial class UninstallView : UserControl
         finally { SetBusy(false); }
     }
 
-    private bool NeedSelection(out Row row)
+    private bool NeedSelection(out Row row, bool programOnly = false)
     {
         row = Selected!;
-        if (row is not null) return true;
-        StatusText.Text = "Hãy chọn một chương trình trong danh sách.";
-        return false;
+        if (row is null) { StatusText.Text = "Hãy chọn một chương trình trong danh sách."; return false; }
+        if (programOnly && row.Program is null)
+        {
+            StatusText.Text = "Bước này chỉ dùng cho chương trình thường. Ứng dụng Store: bấm \"3. Gỡ\" là xong, không có thư mục sót để quét.";
+            return false;
+        }
+
+        return true;
     }
 
     private async void ActivityButton_Click(object sender, RoutedEventArgs e)
     {
-        if (!NeedSelection(out var row)) return;
+        if (!NeedSelection(out var row, programOnly: true)) return;
         _activity = null;
         _cts = new CancellationTokenSource();
         SetBusy(true);
         try
         {
-            var a = await AppActivityScanner.ScanAsync(row.Program.InstallLocation, null, _cts.Token);
+            var a = await AppActivityScanner.ScanAsync(row.Program!.InstallLocation, null, _cts.Token);
             _activity = a;
             var sb = new StringBuilder();
             sb.AppendLine(a.Any ? $"\"{row.Name}\" đang chạy:" : $"Không thấy tiến trình hay dịch vụ nào của \"{row.Name}\" đang chạy từ thư mục cài đặt.");
@@ -105,8 +118,8 @@ public partial class UninstallView : UserControl
 
     private async void StopButton_Click(object sender, RoutedEventArgs e)
     {
-        if (!NeedSelection(out var row) || _activity is not { Any: true }) return;
-        try { await RunAsync(new StopAppFix(row.Program, _activity), refreshAfter: false); }
+        if (!NeedSelection(out var row, programOnly: true) || _activity is not { Any: true }) return;
+        try { await RunAsync(new StopAppFix(row.Program!, _activity), refreshAfter: false); }
         catch (ArgumentException ex) { StatusText.Text = "Chưa thể dừng: " + ex.Message; }
     }
 
@@ -114,13 +127,13 @@ public partial class UninstallView : UserControl
     {
         if (!NeedSelection(out var row)) return;
         if (!row.Verdict.Allowed) { StatusText.Text = row.Verdict.Reason; return; }
-        try { await RunAsync(new UninstallFix(row.Program), refreshAfter: true); }
+        try { await RunAsync(row.Store is not null ? (IFix)new StoreAppFix(row.Store) : new UninstallFix(row.Program!), refreshAfter: true); }
         catch (ArgumentException ex) { StatusText.Text = "Chưa thể gỡ: " + ex.Message; }
     }
 
     private async void LeftoverButton_Click(object sender, RoutedEventArgs e)
     {
-        if (!NeedSelection(out var row)) return;
+        if (!NeedSelection(out var row, programOnly: true)) return;
         _leftovers = null; _leftoverFor = null;
         _cts = new CancellationTokenSource();
         var ct = _cts.Token;
@@ -129,7 +142,7 @@ public partial class UninstallView : UserControl
         try
         {
             var now = await InstalledProgramsScanner.RunAsync(null, ct);
-            var found = await Task.Run(() => LeftoverScanner.Scan(row.Program, now, null, ct), ct);
+            var found = await Task.Run(() => LeftoverScanner.Scan(row.Program!, now, null, ct), ct);
             _leftovers = found; _leftoverFor = row.Program;
             ResultBox.Text = found.Count == 0
                 ? "Không thấy thư mục nào còn sót."

@@ -14,7 +14,7 @@
         <StackPanel Grid.Row="0" Margin="0,0,0,10">
             <TextBlock Text="Gỡ phần mềm cứng đầu" FontSize="22" FontWeight="SemiBold" />
             <TextBlock Foreground="Gray" Margin="0,4,0,0" TextWrapping="Wrap"
-                       Text="Làm từng bước: (1) xem chương trình còn chạy không, (2) dừng nó nếu cần, (3) gỡ bằng trình gỡ riêng của chương trình (bạn xác nhận trong cửa sổ đó), (4) quét thư mục còn sót, (5) chuyển thư mục sót sang nơi riêng (không xóa). PCTool không xóa Registry và không gỡ thành phần của Windows/Microsoft." />
+                       Text="Làm từng bước: (1) xem chương trình còn chạy không, (2) dừng nó nếu cần, (3) gỡ bằng trình gỡ riêng của chương trình (bạn xác nhận trong cửa sổ đó), (4) quét thư mục còn sót, (5) chuyển thư mục sót sang nơi riêng (không xóa). Danh sách gồm cả ứng dụng Microsoft Store (chỉ cần bấm Gỡ). PCTool không xóa Registry và không gỡ thành phần lõi của Windows/Microsoft." />
         </StackPanel>
 
         <DockPanel Grid.Row="1" Margin="0,0,0,8">
@@ -26,6 +26,7 @@
                   HeadersVisibility="Column" GridLinesVisibility="Horizontal" SelectionMode="Single">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Tên" Binding="{Binding Name}" Width="*" />
+                <DataGridTextColumn Header="Loại" Binding="{Binding Kind}" Width="110" />
                 <DataGridTextColumn Header="Phiên bản" Binding="{Binding Version}" Width="100" />
                 <DataGridTextColumn Header="Nhà phát hành" Binding="{Binding Publisher}" Width="160" />
                 <DataGridTextColumn Header="Dung lượng" Binding="{Binding SizeText}" Width="90" />
