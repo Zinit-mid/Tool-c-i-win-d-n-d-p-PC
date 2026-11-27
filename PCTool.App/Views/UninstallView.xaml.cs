@@ -45,19 +45,26 @@ public partial class UninstallView : UserControl
         public event PropertyChangedEventHandler? PropertyChanged;
     }
 
-    /// <summary>Lấy icon của file .exe/.ico như Windows làm; lỗi thì không có icon (không làm hỏng danh sách).</summary>
+    [System.Runtime.InteropServices.DllImport("shell32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    private static extern uint ExtractIconEx(string file, int index, IntPtr[]? large, IntPtr[]? small, uint count);
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern bool DestroyIcon(IntPtr handle);
+
+    /// <summary>Lấy icon nhỏ của file .exe/.ico/.dll như Windows làm; lỗi thì không có icon (không làm hỏng danh sách).</summary>
     private static ImageSource? LoadIcon(string? path)
     {
         if (path is null) return null;
+        var small = new IntPtr[1];
         try
         {
-            using var icon = System.Drawing.Icon.ExtractAssociatedIcon(path);
-            if (icon is null) return null;
-            var src = Imaging.CreateBitmapSourceFromHIcon(icon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            if (ExtractIconEx(path, 0, null, small, 1) == 0 || small[0] == IntPtr.Zero) return null;
+            var src = Imaging.CreateBitmapSourceFromHIcon(small[0], Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
             src.Freeze();
             return src;
         }
         catch (Exception) { return null; }
+        finally { if (small[0] != IntPtr.Zero) DestroyIcon(small[0]); }
     }
 
     private CancellationTokenSource? _cts;
