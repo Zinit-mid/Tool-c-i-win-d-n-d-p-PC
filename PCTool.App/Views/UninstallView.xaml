@@ -5,32 +5,56 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="2*" />
+            <RowDefinition Height="3*" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Margin="0,0,0,10">
-            <TextBlock Text="Gỡ phần mềm cứng đầu" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Text="Gỡ ứng dụng" FontSize="22" FontWeight="SemiBold" />
             <TextBlock Foreground="Gray" Margin="0,4,0,0" TextWrapping="Wrap"
-                       Text="Làm từng bước: (1) xem chương trình còn chạy không, (2) dừng nó nếu cần, (3) gỡ bằng trình gỡ riêng của chương trình (bạn xác nhận trong cửa sổ đó), (4) quét thư mục còn sót, (5) chuyển thư mục sót sang nơi riêng (không xóa). Danh sách gồm cả ứng dụng Microsoft Store (chỉ cần bấm Gỡ). PCTool không xóa Registry và không gỡ thành phần lõi của Windows/Microsoft." />
+                       Text="Tick ô vuông bên cạnh tên rồi bấm &quot;Gỡ các mục đã tick&quot;. Mỗi chương trình sẽ mở trình gỡ riêng của nó, bạn xác nhận trong cửa sổ đó. Danh sách chỉ hiện chương trình gỡ được (đã ẩn thành phần hệ thống, VC++, .NET, bản cập nhật...). Gỡ xong có thể quét và chuyển thư mục còn sót (không xóa hẳn)." />
         </StackPanel>
 
         <DockPanel Grid.Row="1" Margin="0,0,0,8">
             <Button x:Name="LoadButton" DockPanel.Dock="Right" Content="Tải danh sách" Width="120" Height="30" Margin="8,0,0,0" Click="LoadButton_Click" />
+            <CheckBox x:Name="ShowAllBox" DockPanel.Dock="Right" Content="Hiện cả mục không gỡ được" VerticalAlignment="Center" Margin="8,0,0,0" Click="ShowAllBox_Click" />
+            <CheckBox x:Name="SelectAllBox" DockPanel.Dock="Left" Content="Chọn hết" VerticalAlignment="Center" Margin="0,0,10,0" Click="SelectAllBox_Click" />
             <TextBox x:Name="SearchBox" Height="30" VerticalContentAlignment="Center" TextChanged="SearchBox_TextChanged" ToolTip="Gõ tên chương trình để lọc" />
         </DockPanel>
 
         <DataGrid x:Name="ProgramsGrid" Grid.Row="2" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
-                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" SelectionMode="Single">
+                  HeadersVisibility="Column" GridLinesVisibility="None" SelectionMode="Single" RowHeight="30"
+                  VerticalContentAlignment="Center" BorderThickness="0" Background="Transparent" RowBackground="Transparent">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Tên" Binding="{Binding Name}" Width="*" />
-                <DataGridTextColumn Header="Loại" Binding="{Binding Kind}" Width="110" />
-                <DataGridTextColumn Header="Phiên bản" Binding="{Binding Version}" Width="100" />
-                <DataGridTextColumn Header="Nhà phát hành" Binding="{Binding Publisher}" Width="160" />
-                <DataGridTextColumn Header="Dung lượng" Binding="{Binding SizeText}" Width="90" />
-                <DataGridTextColumn Header="Gỡ từ PCTool" Binding="{Binding Status}" Width="170" />
+                <DataGridTemplateColumn Width="38" CanUserSort="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <CheckBox IsChecked="{Binding Checked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanUninstall}"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center" Click="RowCheck_Click" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Tên" Width="*" SortMemberPath="Name">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Image Source="{Binding Icon}" Width="20" Height="20" Margin="2,0,8,0" RenderOptions.BitmapScalingMode="HighQuality" />
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Nhà phát hành" Binding="{Binding Publisher}" Width="170" />
+                <DataGridTextColumn Header="Ngày cài" Binding="{Binding DateText}" SortMemberPath="DateSort" Width="90" />
+                <DataGridTextColumn Header="Dung lượng" Binding="{Binding SizeText}" SortMemberPath="SizeKb" Width="90">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock"><Setter Property="HorizontalAlignment" Value="Right" /><Setter Property="Margin" Value="0,0,8,0" /></Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Phiên bản" Binding="{Binding Version}" Width="110" />
+                <DataGridTextColumn Header="Loại" Binding="{Binding Kind}" Width="80" />
             </DataGrid.Columns>
         </DataGrid>
 
@@ -43,11 +67,11 @@
         </StackPanel>
 
         <WrapPanel Grid.Row="5" Margin="0,8,0,0">
-            <Button x:Name="ActivityButton" Content="1. Xem đang chạy" Width="130" Height="32" Margin="0,0,8,6" Click="ActivityButton_Click" />
-            <Button x:Name="StopButton" Content="2. Dừng" Width="90" Height="32" Margin="0,0,8,6" Click="StopButton_Click" IsEnabled="False" />
-            <Button x:Name="UninstallButton" Content="3. Gỡ" Width="90" Height="32" Margin="0,0,8,6" Click="UninstallButton_Click" />
-            <Button x:Name="LeftoverButton" Content="4. Quét tàn dư" Width="120" Height="32" Margin="0,0,8,6" Click="LeftoverButton_Click" />
-            <Button x:Name="MoveButton" Content="5. Chuyển tàn dư" Width="130" Height="32" Margin="0,0,8,6" Click="MoveButton_Click" IsEnabled="False" />
+            <Button x:Name="UninstallButton" Content="Gỡ các mục đã tick" Width="150" Height="32" Margin="0,0,8,6" Click="UninstallButton_Click" FontWeight="SemiBold" />
+            <Button x:Name="ActivityButton" Content="Xem đang chạy" Width="120" Height="32" Margin="0,0,8,6" Click="ActivityButton_Click" ToolTip="Dùng cho dòng đang chọn (chương trình thường)" />
+            <Button x:Name="StopButton" Content="Dừng chương trình" Width="140" Height="32" Margin="0,0,8,6" Click="StopButton_Click" IsEnabled="False" />
+            <Button x:Name="LeftoverButton" Content="Quét tàn dư" Width="110" Height="32" Margin="0,0,8,6" Click="LeftoverButton_Click" ToolTip="Dùng cho dòng đang chọn, sau khi đã gỡ" />
+            <Button x:Name="MoveButton" Content="Chuyển tàn dư" Width="120" Height="32" Margin="0,0,8,6" Click="MoveButton_Click" IsEnabled="False" />
             <Button x:Name="CancelButton" Content="Dừng việc" Width="90" Height="32" Margin="0,0,8,6" Click="CancelButton_Click" IsEnabled="False" />
             <CheckBox x:Name="DryRunBox" Content="Chạy thử (không thay đổi gì)" IsChecked="True" VerticalAlignment="Center" Margin="8,0,0,6" />
         </WrapPanel>

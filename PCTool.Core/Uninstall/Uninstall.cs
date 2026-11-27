@@ -11,7 +11,7 @@ namespace PCTool.Core.Uninstall;
 public sealed record InstalledProgram(
     string Hive, bool Wow64, string Key, string Name, string Version, string Publisher,
     string UninstallString, string QuietUninstallString, string InstallLocation,
-    long SizeKb, bool IsSystemComponent, string ParentKey, bool IsMsi)
+    long SizeKb, bool IsSystemComponent, string ParentKey, bool IsMsi, string DisplayIcon = "", string InstallDate = "")
 {
     public bool SameEntry(InstalledProgram o) => Hive == o.Hive && Wow64 == o.Wow64 && Key == o.Key;
     public string SizeText => SizeKb <= 0 ? "" : PCTool.Core.Folders.SizeText.Of(SizeKb * 1024);
@@ -33,7 +33,7 @@ foreach ($p in $paths) {
         name = [string]$v.DisplayName; version = [string]$v.DisplayVersion; publisher = [string]$v.Publisher
         uninstall = [string]$v.UninstallString; quiet = [string]$v.QuietUninstallString; location = [string]$v.InstallLocation
         sizeKb = [long]$v.EstimatedSize; system = [bool]($v.SystemComponent -eq 1); parent = [string]$v.ParentKeyName
-        msi = [bool]($v.WindowsInstaller -eq 1)
+        msi = [bool]($v.WindowsInstaller -eq 1); icon = [string]$v.DisplayIcon; date = [string]$v.InstallDate
       }
     }
   }
@@ -70,7 +70,7 @@ foreach ($p in $paths) {
                 list.Add(new InstalledProgram(Str(e, "hive"), Bool(e, "wow"), key, name, Str(e, "version"), Str(e, "publisher"),
                     Str(e, "uninstall").Trim(), Str(e, "quiet").Trim(), Str(e, "location").Trim().Trim('"'),
                     e.TryGetProperty("sizeKb", out var s) && s.ValueKind == JsonValueKind.Number && s.TryGetInt64(out var l) ? l : 0,
-                    Bool(e, "system"), Str(e, "parent"), Bool(e, "msi")));
+                    Bool(e, "system"), Str(e, "parent"), Bool(e, "msi"), Str(e, "icon").Trim(), Str(e, "date").Trim()));
             }
             return list.OrderBy(p => p.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
         }
